@@ -8,5 +8,6 @@ const router = Router();
 
 router.post("/uploadDataset", upload.single('file'), UserController.uploadDataset.bind(UserController));
 router.get("/getDatasets", UserController.getDatasets.bind(UserController))
+router.get('/search', UserController.search.bind(UserController));
 
 module.exports = router;

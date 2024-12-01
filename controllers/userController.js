@@ -85,6 +85,7 @@ class UserController {
             storageLocation: `ipfs://${result.IpfsHash}`,
             tags: req.body.tags ? req.body.tags.split(',') : [],
           });
+          console.log("newDataset", newDataset)
       
           // Save dataset
           const savedDataset = await newDataset.save();
@@ -144,7 +145,44 @@ class UserController {
         }
     }
 
-   
+    async search(req, res) {
+        try {
+            const { tag, dataType } = req.query;
+    
+            const filter = {};
+    
+            if (tag) {
+                filter.tags = { $in: tag.split(',').map(t => t.trim()) };
+            }
+    
+            if (dataType) {
+                filter.dataType = dataType;
+            }
+    
+            const datasets = await Dataset.find(filter);
+    
+            if (datasets.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No datasets found matching the search criteria',
+                });
+            }
+    
+            res.status(200).json({
+                success: true,
+                message: 'Datasets retrieved successfully',
+                datasets,
+            });
+        } catch (error) {
+            console.error('Search error:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error during search',
+                error: process.env.NODE_ENV === 'production' ? {} : error.message,
+            });
+        }
+    }
+    
       
 }
 
