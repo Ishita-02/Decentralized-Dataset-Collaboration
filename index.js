@@ -6,23 +6,23 @@ const cors = require('cors');
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-
-app.use('/', router);
-app.get('/', (req, res) => {
-    res.send('Hello World');
-})
-
 const corsOptions = {
-    origin: ['http://localhost:3000', 'http://localhost:3000/newDataset', 'http://localhost:3000/*'],
+    origin: ['http://localhost:3001', 'http://localhost:3001/newDataset', 'http://localhost:3000/*'],
     methods: ['GET', 'POST'], 
     allowedHeaders: ['Content-Type', 'Authorization', 'Multipart/form-data'],
     credentials: true
   };
   
 app.use(cors(corsOptions));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+
+app.use('/', router);
+app.get('/', (req, res) => {
+    res.send('Hello World');
+})
 
 app.post('/api/users', async (req, res) => {
     try {
