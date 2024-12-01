@@ -7,5 +7,6 @@ const upload = multer({ storage: storage });
 const router = Router();
 
 router.post("/uploadDataset", upload.single('file'), UserController.uploadDataset.bind(UserController));
+router.get("/getDatasets", UserController.getDatasets.bind(UserController))
 
 module.exports = router;

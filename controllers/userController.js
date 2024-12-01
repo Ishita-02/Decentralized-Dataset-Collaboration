@@ -115,7 +115,35 @@ class UserController {
             error: process.env.NODE_ENV === 'production' ? {} : error.message,
           });
         }
+    }
+
+    async getDatasets(req, res) {
+        try {
+          const datasets = await Dataset.find(); 
+      
+          if (!datasets || datasets.length === 0) {
+            return res.status(404).json({
+              success: false,
+              message: 'No datasets found',
+            });
+          }
+      
+          res.status(200).json({
+            success: true,
+            message: 'Datasets retrieved successfully',
+            datasets,
+          });
+        } catch (error) {
+          console.error('Error fetching datasets:', error);
+      
+          res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: process.env.NODE_ENV === 'production' ? {} : error.message,
+          });
+        }
       }
+      
 }
 
 module.exports = new UserController();
