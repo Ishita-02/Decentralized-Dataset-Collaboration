@@ -17,6 +17,8 @@ app.get('/', (req, res) => {
 
 const corsOptions = {
     origin: ['http://localhost:3000', 'http://localhost:3000/newDataset', 'http://localhost:3000/*'],
+    methods: ['GET', 'POST'], 
+    allowedHeaders: ['Content-Type', 'Authorization', 'Multipart/form-data'],
     credentials: true
   };
   
