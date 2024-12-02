@@ -7,7 +7,7 @@ const cors = require('cors');
 const app = express();
 
 const corsOptions = {
-    origin: ['http://localhost:3001', 'http://localhost:3001/newDataset', 'http://localhost:3000/*'],
+    origin: ['http://localhost:3001', 'http://localhost:3001/newDataset', 'http://localhost:3001/*'],
     methods: ['GET', 'POST'], 
     allowedHeaders: ['Content-Type', 'Authorization', 'Multipart/form-data'],
     credentials: true
