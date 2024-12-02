@@ -182,7 +182,60 @@ class UserController {
             });
         }
     }
+
+    async verifyDataset(req, res) {
+        try {
+            const { datasetId } = req.params; 
+            const { verifierId, rating } = req.body;
     
+            if (rating < 0 || rating > 100) {
+                return res.status(400).json({ success: false, message: 'Rating must be between 0 and 100' });
+            }
+    
+            const dataset = await Dataset.findById(datasetId);
+            if (!dataset) {
+                return res.status(404).json({ success: false, message: 'Dataset not found' });
+            }
+    
+            const verifier = await User.findById(verifierId);
+            if (!verifier) {
+                return res.status(404).json({ success: false, message: 'Verifier not found' });
+            }
+            if (verifier.role !== 'verifier') {
+                return res.status(403).json({ success: false, message: 'User is not authorized to verify' });
+            }
+    
+            dataset.verificationStatus = 'verified';
+            dataset.totalVotes = (dataset.totalVotes || 0) + 1;
+            dataset.cumulativeRating = (dataset.cumulativeRating || 0) + rating;
+    
+            if (dataset.totalVotes >= 20) { 
+                const averageRating = dataset.cumulativeRating / dataset.totalVotes;
+                dataset.isVerified = averageRating >= 50; 
+            }
+    
+            await dataset.save();
+    
+            if (!verifier.verificationsDone.includes(datasetId)) {
+                verifier.verificationsDone.push(datasetId);
+                await verifier.save();
+            }
+    
+            return res.status(200).json({
+                success: true,
+                message: 'Dataset verified successfully',
+                dataset,
+                verifier,
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error during dataset verification',
+                error: error.message,
+            });
+        }
+    }
       
 }
 
