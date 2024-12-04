@@ -1,8 +1,12 @@
 const router = require('./routes/index.js');
 const mongoose = require('mongoose');
 const express = require('express');
+const dotenv = require('dotenv'); 
 const {User} = require('./models/userModel.js');
 const cors = require('cors');
+dotenv.config();
+
+
 
 const app = express();
 
@@ -62,7 +66,7 @@ app.post('/api/users', async (req, res) => {
     }
   });
 
-mongoose.connect('mongodb+srv://ishitagrawal0207:lpdNBhlHhN8cuoER@cluster0.hg0xkl5.mongodb.net/unfoldHackathon', { dbName: "unfoldHackathon" });
+mongoose.connect(`${process.env.MONGO_URI}`, { dbName: "unfoldHackathon" });
 
 app.listen(3000, () => {
     console.log(`Server is running on port 3000`);

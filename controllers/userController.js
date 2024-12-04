@@ -1,21 +1,24 @@
 const pinataSDK = require('@pinata/sdk');
 const fs = require('fs');
+const dotenv = require('dotenv');
 const {Dataset} = require('../models/datasetModel.js');
 const {User} = require('../models/userModel.js');
 const { Readable } = require('stream'); 
+dotenv.config();
 
 class UserController {
 
     constructor() {
         this.pinata = new pinataSDK(
-          'fb764f1ac886482783f7', 
-          'e8583cbf41c36e1a18efc961f388476c85ecaf9f12304c00855f00cb5bea14ae'
+          `${PINATA_API_KEY}`, 
+          `${PINATA_SECRET_KEY}`
         );
       }
 
     async uploadDataset(req, res) {
         try {
           const walletAddress = req.query.walletAddress;
+          console.log(walletAddress)
       
           if (!walletAddress) {
             return res.status(400).json({
@@ -104,6 +107,9 @@ class UserController {
               title: savedDataset.title,
               ipfsHash: result.IpfsHash,
               storageLocation: savedDataset.storageLocation,
+              size: savedDataset.fileSize,
+              tokenUri: savedDataset.storageLocation,
+              price: savedDataset.price
             },
           });
       
