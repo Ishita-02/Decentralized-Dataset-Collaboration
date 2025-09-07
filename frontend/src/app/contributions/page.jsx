@@ -1,3 +1,4 @@
+"use client"
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,7 @@ export default function Contributions() {
   const [web3Connected, setWeb3Connected] = useState(false);
 
   const router = useRouter();
+
 
   useEffect(() => {
     loadData();

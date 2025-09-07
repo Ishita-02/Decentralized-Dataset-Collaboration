@@ -1,8 +1,11 @@
+"use client"
+
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/components/utils";
+// import { Link } from "react-router-dom";
+import { useRouter } from "next/navigation"; 
+import { createPageUrl } from "@/components/ui/utils";
 import { 
   Upload, 
   Database, 
@@ -13,6 +16,7 @@ import {
   FileText,
   CheckCircle
 } from "lucide-react";
+
 
 export default function QuickActions() {
   const actions = [
@@ -42,6 +46,9 @@ export default function QuickActions() {
     }
   ];
 
+
+  const router = useRouter();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -63,12 +70,13 @@ export default function QuickActions() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-white/70 text-sm">{action.description}</p>
-              <Link to={action.url}>
-                <Button className={`w-full bg-gradient-to-r ${action.color} hover:scale-105 transition-all duration-200`}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  {action.cta}
-                </Button>
-              </Link>
+              <Button
+                className={`w-full bg-gradient-to-r ${action.color} hover:scale-105 transition-all duration-200`}
+                onClick={() => router.push(action.url)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {action.cta}
+              </Button>
             </CardContent>
           </Card>
         ))}

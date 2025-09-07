@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Dataset, User } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -15,11 +14,16 @@ import {
   Eye,
   Plus
 } from "lucide-react";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/components/utils";
+// import { Link } from "react-router-dom";
+import { useRouter } from "next/navigation"; 
+import { createPageUrl } from "@/components/ui/utils";
 import { format } from "date-fns";
 
 import DatasetCard from "../components/browse/DatasetCard";
+import Web3Service from "../components/services/Web3Service";
+
+const router = useRouter();
+
 
 export default function Browse() {
   const [datasets, setDatasets] = useState([]);
@@ -69,7 +73,7 @@ export default function Browse() {
 
   const loadDatasets = async () => {
     try {
-      const data = await Dataset.list('-created_date');
+      const data = await Web3Service.getAllDatasets();
       setDatasets(data);
     } catch (error) {
       console.error("Error loading datasets:", error);
@@ -143,12 +147,13 @@ export default function Browse() {
               <p className="text-white/60 text-sm">
                 {filteredDatasets.length} dataset{filteredDatasets.length !== 1 ? 's' : ''} found
               </p>
-              <Link to={createPageUrl("Upload")}>
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Upload Dataset
-                </Button>
-              </Link>
+              <Button
+                className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                onClick={() => router.push(createPageUrl("Upload"))}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Upload Dataset
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -177,12 +182,13 @@ export default function Browse() {
               <p className="text-white/60 mb-6">
                 Try adjusting your search terms or filters
               </p>
-              <Link to={createPageUrl("Upload")}>
-                <Button className="bg-gradient-to-r from-blue-500 to-purple-500">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Upload First Dataset
-                </Button>
-              </Link>
+              <Button
+                className="bg-gradient-to-r from-blue-500 to-purple-500"
+                onClick={() => router.push(createPageUrl("Upload"))}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Upload First Dataset
+              </Button>
             </div>
           ) : (
             filteredDatasets.map((dataset) => (

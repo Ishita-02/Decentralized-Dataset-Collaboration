@@ -1,5 +1,7 @@
+"use client"
+
+
 import React, { useState, useEffect } from "react";
-import { Contribution, Verification, Dataset, User } from "@/entities/all";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +18,6 @@ import {
   FileText,
   AlertCircle
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/components/ui/utils";
 
 import VerificationCard from "../components/verify/VerificationCard";
@@ -24,7 +25,6 @@ import StakeDialog from "../components/verify/StakeDialog";
 import Web3Service from "../components/services/Web3Service"; // Updated import path
 
 export default function Verify() {
-  const navigate = useNavigate();
   const [pendingContributions, setPendingContributions] = useState([]);
   const [myVerifications, setMyVerifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +104,7 @@ export default function Verify() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(createPageUrl("Dashboard"))}
+            onClick={() => router.push("/")}
             className="text-white hover:bg-white/10"
           >
             <ArrowLeft className="w-5 h-5" />

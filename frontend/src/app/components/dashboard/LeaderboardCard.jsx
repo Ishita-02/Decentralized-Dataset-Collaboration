@@ -1,6 +1,7 @@
+"use client"
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User } from "@/entities/User";
 import { 
   Trophy, 
   Medal, 
@@ -8,6 +9,7 @@ import {
   TrendingUp
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import Web3Service from "../services/Web3Service";
 
 export default function LeaderboardCard({ isLoading }) {
   const [topUsers, setTopUsers] = useState([]);
@@ -19,11 +21,9 @@ export default function LeaderboardCard({ isLoading }) {
 
   const loadLeaderboard = async () => {
     try {
-      const users = await User.list();
-      const sorted = users
-        .sort((a, b) => (b.total_earned || 0) - (a.total_earned || 0))
-        .slice(0, 5);
-      setTopUsers(sorted);
+      // With no DB, synthesize a minimal list from available wallet only
+      const me = await Web3Service.getCurrentUser();
+      setTopUsers([me]);
     } catch (error) {
       console.error("Error loading leaderboard:", error);
     }

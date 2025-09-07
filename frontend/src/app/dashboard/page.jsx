@@ -1,3 +1,5 @@
+"use client"
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,13 +19,12 @@ import {
   ArrowRight
 } from "lucide-react";
 
-import StatsGrid from "../components/dashboard/StatsGrid";
+import StatsGrid from "../components/dashboard/StataGrid";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import QuickActions from "../components/dashboard/QuickActions";
 import LeaderboardCard from "../components/dashboard/LeaderboardCard";
 import Web3Service from "../components/services/Web3Service";
 
-const router = useRouter();
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -35,6 +36,9 @@ export default function Dashboard() {
   });
   const [recentActivity, setRecentActivity] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const router = useRouter();
+
 
   useEffect(() => {
     loadDashboardData();

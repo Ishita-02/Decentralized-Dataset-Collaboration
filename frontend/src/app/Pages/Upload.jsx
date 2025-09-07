@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Dataset, User } from "@/entities/all";
 import { UploadFile } from "@/integrations/Core";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +16,11 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/components/utils";
+import { createPageUrl } from "@/components/ui/utils";
 
 import FileUploadZone from "../components/upload/FileUploadZone";
 import RewardSettings from "../components/upload/RewardSettings";
+import Web3Service from "../components/services/Web3Service";
 
 export default function Upload() {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ export default function Upload() {
     setError(null);
 
     try {
-      const user = await User.me();
+      await Web3Service.connectWallet();
 
       if (!file) {
         throw new Error("Please select a file to upload");
@@ -74,15 +74,10 @@ export default function Upload() {
       // Calculate file size
       const size_mb = (file.size / (1024 * 1024)).toFixed(2);
 
-      // Create dataset
-      const dataset = await Dataset.create({
-        ...formData,
-        owner: user.email,
-        file_url,
-        file_type: file.type,
-        size_mb: parseFloat(size_mb),
-        status: "open_for_contributions"
-      });
+      // Create dataset via contract
+      const tokenURI = file_url; // store uploaded file URL/URI
+      const price = Number(formData.download_price || 0);
+      await Web3Service.uploadDataset(price, tokenURI);
 
       setSuccess(true);
       

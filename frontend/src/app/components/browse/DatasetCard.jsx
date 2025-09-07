@@ -13,8 +13,9 @@ import {
   ExternalLink
 } from "lucide-react";
 import { format } from "date-fns";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "@/components/utils";
+// import { Link } from "react-router-dom";
+import { useRouter } from "next/navigation"; 
+import { createPageUrl } from "@/components/ui/utils";
 
 export default function DatasetCard({ dataset }) {
   const getCategoryColor = (category) => {
@@ -39,6 +40,7 @@ export default function DatasetCard({ dataset }) {
     };
     return colors[status] || colors.open_for_contributions;
   };
+  const router = useRouter();
 
   return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 transition-all duration-300 group">
@@ -105,20 +107,24 @@ export default function DatasetCard({ dataset }) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-2">
-          <Link to={`${createPageUrl("Dataset")}?id=${dataset.id}`} className="flex-1">
-            <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 text-sm">
-              <Eye className="w-4 h-4 mr-2" />
-              View Details
-            </Button>
-          </Link>
+       <div className="flex gap-2 pt-2">
+          <Button
+            variant="outline"
+            className="flex-1 w-full border-white/20 text-white hover:bg-white/10 text-sm"
+            onClick={() => router.push(`${createPageUrl("Dataset")}?id=${dataset.id}`)}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            View Details
+          </Button>
+          
           {dataset.status === 'open_for_contributions' && (
-            <Link to={`${createPageUrl("Contribute")}?dataset=${dataset.id}`}>
-              <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Contribute
-              </Button>
-            </Link>
+            <Button
+              className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-sm"
+              onClick={() => router.push(`${createPageUrl("Contribute")}?dataset=${dataset.id}`)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Contribute
+            </Button>
           )}
         </div>
 
