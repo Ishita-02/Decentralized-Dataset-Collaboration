@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRouter } from "next/navigation"; 
 import { 
   ShieldCheck,
   Clock,
@@ -33,6 +34,8 @@ export default function Verify() {
   const [stakedAmount, setStakedAmount] = useState(0);
   const [showStakeDialog, setShowStakeDialog] = useState(false);
   const [web3Connected, setWeb3Connected] = useState(false);
+
+  const router = useRouter();
 
   useEffect(() => {
     loadData();

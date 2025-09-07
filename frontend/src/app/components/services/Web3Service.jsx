@@ -748,6 +748,7 @@ class Web3Service {
 
     try {
       const balance = await this.contract.methods.withdrawableBalance(this.account).call();
+      console.log("balance from withdrawable balance", balance)
       return this.web3.utils.fromWei(balance, 'ether');
     } catch (error) {
       console.error("Error getting withdrawable balance:", error);
@@ -762,9 +763,10 @@ class Web3Service {
       await this.init();
     }
     try {
-      if (this.contract?.methods?.getAllDatasets) {
-        const items = await this.contract.methods.getAllDatasets().call();
-        return (items || []).map((d, idx) => ({
+      if (this.contract?.methods?.datasets) {
+        const items = await this.contract.methods.datasets(1).call();
+        console.log("items from datasets", items)
+        return ([items] || []).map((d, idx) => ({
           id: Number(d.id ?? idx),
           owner: d.owner || this.account || '0x0',
           currentURI: d.currentURI || d.tokenURI || '',

@@ -17,19 +17,20 @@ import {
   ExternalLink,
   ShoppingCart
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation"; 
 import { createPageUrl } from "@/components/ui/utils";
 import { format } from "date-fns";
 import Web3Service from "../components/services/Web3Service";
 
 export default function Downloads() {
-  const navigate = useNavigate();
   const [datasets, setDatasets] = useState([]);
   const [filteredDatasets, setFilteredDatasets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [user, setUser] = useState(null);
   const [purchasing, setPurchasing] = useState({});
+
+  const router = useRouter();
 
   const filterDatasets = useCallback(() => {
     const filtered = datasets.filter(dataset =>
@@ -55,6 +56,7 @@ export default function Downloads() {
 
       // Load verified and published datasets available for download
       const data = await Web3Service.getAllDatasets();
+      console.log("data from getAllDatasets", data)
       setDatasets(data);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -93,7 +95,7 @@ export default function Downloads() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate(createPageUrl("Dashboard"))}
+            onClick={() => router.push(createPageUrl("Dashboard"))}
             className="text-white hover:bg-white/10"
           >
             <ArrowLeft className="w-5 h-5" />
