@@ -100,7 +100,7 @@ export default function Profile() {
               <div className="text-right">
                 <div className="flex items-center gap-2 text-2xl font-bold text-yellow-400 mb-2">
                   <Coins className="w-6 h-6" />
-                  {user?.tokens_balance || 0} DCT
+                  {user?.tokens_balance || 0} DATA
                 </div>
                 <p className="text-white/60 text-sm">Available Balance</p>
               </div>
@@ -177,9 +177,9 @@ export default function Profile() {
                               <Badge variant="outline" className="text-xs border-white/20 text-white/70">
                                 {dataset.category.replace('_', ' ')}
                               </Badge>
-                              <Badge variant="outline" className="text-xs border-white/20 text-white/70">
+                              {/* <Badge variant="outline" className="text-xs border-white/20 text-white/70">
                                 {dataset.status.replace('_', ' ')}
-                              </Badge>
+                              </Badge> */}
                             </div>
                           </div>
                           <div className="text-right text-sm text-white/60">
@@ -224,7 +224,7 @@ export default function Profile() {
                             </Badge>
                             {contribution.tokens_earned > 0 && (
                               <div className="text-yellow-400 text-sm font-medium">
-                                +{contribution.tokens_earned} DCT
+                                +{contribution.tokens_earned} DATA
                               </div>
                             )}
                           </div>
@@ -266,7 +266,7 @@ export default function Profile() {
                             </Badge>
                             {verification.tokens_earned > 0 && (
                               <div className="text-yellow-400 text-sm font-medium">
-                                +{verification.tokens_earned} DCT
+                                +{verification.tokens_earned} DATA
                               </div>
                             )}
                           </div>

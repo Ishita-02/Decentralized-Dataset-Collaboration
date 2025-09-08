@@ -113,7 +113,7 @@ export default function Contributions() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-white">My Contributions</h1>
-            <p className="text-white/70">Contribute to datasets and earn DCT tokens</p>
+            <p className="text-white/70">Contribute to datasets and earn DATA tokens</p>
           </div>
         </div>
 
@@ -167,7 +167,7 @@ export default function Contributions() {
             <CardContent className="p-6 text-center">
               <Coins className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
               <div className="text-2xl font-bold text-white">{stats.totalEarned}</div>
-              <p className="text-white/60 text-sm">DCT Earned</p>
+              <p className="text-white/60 text-sm">DATA Earned</p>
             </CardContent>
           </Card>
         </div>
@@ -246,7 +246,7 @@ export default function Contributions() {
                         </Badge>
                         <div className="flex items-center gap-1 text-yellow-400">
                           <Coins className="w-4 h-4" />
-                          <span className="font-medium">{dataset.contribution_reward} DCT</span>
+                          <span className="font-medium">{dataset.contribution_reward} DATA</span>
                         </div>
                       </div>
                       <Button 

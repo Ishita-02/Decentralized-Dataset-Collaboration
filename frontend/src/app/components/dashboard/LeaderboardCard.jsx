@@ -89,7 +89,7 @@ export default function LeaderboardCard({ isLoading }) {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-yellow-400 text-sm">
-                    {user.total_earned || 0} DCT
+                    {user.total_earned || 0} DATA
                   </p>
                 </div>
               </div>

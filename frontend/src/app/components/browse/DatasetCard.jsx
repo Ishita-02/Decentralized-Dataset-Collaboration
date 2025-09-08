@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { createPageUrl } from "@/components/ui/utils";
 
 export default function DatasetCard({ dataset }) {
+  console.log("dataset from DatasetCard", dataset)
   const getCategoryColor = (category) => {
     const colors = {
       machine_learning: "bg-blue-500/10 text-blue-400 border-blue-500/20",
@@ -49,9 +50,9 @@ export default function DatasetCard({ dataset }) {
           <Badge variant="outline" className={getCategoryColor(dataset.category)}>
             {dataset.category.replace('_', ' ')}
           </Badge>
-          <Badge variant="outline" className={getStatusColor(dataset.status)}>
+          {/* <Badge variant="outline" className={getStatusColor(dataset.status)}>
             {dataset.status.replace('_', ' ')}
-          </Badge>
+          </Badge> */}
         </div>
         <CardTitle className="text-white text-lg group-hover:text-blue-300 transition-colors">
           {dataset.title}
@@ -100,7 +101,7 @@ export default function DatasetCard({ dataset }) {
             <div className="flex items-center gap-2">
               <Coins className="w-4 h-4 text-yellow-400" />
               <span className="text-white text-sm font-medium">
-                {dataset.contribution_reward} DCT per contribution
+                {dataset.contribution_reward} DATA per contribution
               </span>
             </div>
           </div>

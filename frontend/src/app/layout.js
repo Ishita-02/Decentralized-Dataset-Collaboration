@@ -2,6 +2,8 @@
 
 import "./globals.css";
 import AppLayout from '@/components/AppLayout'; // Our new client layout
+import { Web3Provider } from "./context/Web3Provider"; // Import the provider
+
 
 export const metadata = {
   title: 'DataNexus',
@@ -12,6 +14,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+      <Web3Provider>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
           {/* Static background from your original layout */}
           <div className="absolute inset-0 opacity-20">
@@ -23,6 +26,7 @@ export default function RootLayout({ children }) {
           {/* Render the interactive client layout, which contains the sidebar and header */}
           <AppLayout>{children}</AppLayout>
         </div>
+        </Web3Provider>
       </body>
     </html>
   );

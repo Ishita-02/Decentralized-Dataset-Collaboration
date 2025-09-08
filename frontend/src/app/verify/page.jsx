@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter } from "next/navigation"; 
+import { useWeb3 } from "../context/Web3Provider"; 
 import { 
   ShieldCheck,
   Clock,
@@ -30,17 +31,30 @@ export default function Verify() {
   const [myVerifications, setMyVerifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [isVerifier, setIsVerifier] = useState(false);
-  const [stakedAmount, setStakedAmount] = useState(0);
+//   const [isVerifier, setIsVerifier] = useState(false);
+//   const [stakedAmount, setStakedAmount] = useState(0);
   const [showStakeDialog, setShowStakeDialog] = useState(false);
   const [web3Connected, setWeb3Connected] = useState(false);
+  const { account, isVerifier, stakedAmount, connectWallet } = useWeb3();
 
   const router = useRouter();
 
   useEffect(() => {
-    loadData();
-    checkVerifierStatus();
-  }, []);
+    // This page only needs to load its own specific data now
+    const loadPageData = async () => {
+      if (isVerifier) {
+        const proposals = await Web3Service.getPendingProposals();
+        setPendingContributions(proposals);
+      }
+      setLoading(false);
+    };
+
+    if (account) { // Only load data if the user is connected
+      loadPageData();
+    } else {
+      setLoading(false);
+    }
+  }, [account, isVerifier]); 
 
   const loadData = async () => {
     try {
@@ -119,7 +133,7 @@ export default function Verify() {
         </div>
 
         {/* Web3 Connection & Verifier Status */}
-        {!web3Connected ? (
+        {!account ? (
           <Card className="bg-yellow-500/10 border-yellow-500/20">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -143,7 +157,7 @@ export default function Verify() {
                 <div>
                   <h3 className="text-blue-400 font-medium text-lg mb-2">Become a Verifier</h3>
                   <p className="text-blue-300/70 text-sm mb-1">
-                    Stake 1000 DCT tokens to become a verifier and earn rewards
+                    Stake 1000 DATA tokens to become a verifier and earn rewards
                   </p>
                   <p className="text-blue-300/50 text-xs">
                     Verifiers vote on contribution proposals and earn rewards for accurate reviews
@@ -167,7 +181,7 @@ export default function Verify() {
                   <ShieldCheck className="w-8 h-8 text-green-400" />
                   <div>
                     <p className="text-green-400 font-medium">Active Verifier</p>
-                    <p className="text-green-300/70 text-sm">Staked: {stakedAmount} DCT</p>
+                    <p className="text-green-300/70 text-sm">Staked: {stakedAmount} DATA</p>
                   </div>
                 </div>
                 <Badge className="bg-green-400/20 text-green-300 border-green-400/30">
@@ -201,7 +215,7 @@ export default function Verify() {
               <CardContent className="p-6 text-center">
                 <Coins className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
                 <div className="text-2xl font-bold text-white">{stats.totalEarned}</div>
-                <p className="text-white/60 text-sm">DCT Earned</p>
+                <p className="text-white/60 text-sm">DATA Earned</p>
               </CardContent>
             </Card>
             
@@ -209,7 +223,7 @@ export default function Verify() {
               <CardContent className="p-6 text-center">
                 <Award className="w-8 h-8 text-purple-400 mx-auto mb-3" />
                 <div className="text-2xl font-bold text-white">{stakedAmount}</div>
-                <p className="text-white/60 text-sm">Staked DCT</p>
+                <p className="text-white/60 text-sm">Staked DATA</p>
               </CardContent>
             </Card>
           </div>
@@ -292,7 +306,7 @@ export default function Verify() {
                           <div className="text-right">
                             {verification.tokens_earned > 0 && (
                               <div className="text-yellow-400 font-medium">
-                                +{verification.tokens_earned} DCT
+                                +{verification.tokens_earned} DATA
                               </div>
                             )}
                           </div>

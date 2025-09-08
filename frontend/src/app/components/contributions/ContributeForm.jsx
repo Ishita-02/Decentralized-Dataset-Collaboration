@@ -93,7 +93,7 @@ export default function ContributeForm({ dataset, onSubmit, onCancel }) {
               <span className="text-white font-medium">Potential Reward</span>
             </div>
             <p className="text-yellow-400 text-lg font-bold">
-              {dataset.contribution_reward} DCT tokens
+              {dataset.contribution_reward} DATA tokens
             </p>
             <p className="text-yellow-300/70 text-sm">
               Earned upon approval by verifiers

@@ -9,22 +9,25 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useWeb3 } from "../app/context/Web3Provider"; // Import the custom hook
 
 const createPageUrl = (page) => `/${page.toLowerCase().replace(/\s+/g, '-')}`;
 
 const navigationItems = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
-  { title: "Browse Datasets", href: "/browse", icon: Database },
-  { title: "Upload Dataset", href: "/upload", icon: Upload },
-  { title: "My Contributions", href: "/contributions", icon: Users },
-  { title: "Verify Work", href: "/verify", icon: ShieldCheck },
-  { title: "Marketplace", href: "/downloads", icon: Download },
+    { title: "Dashboard", href: "/", icon: LayoutDashboard },
+    { title: "Browse Datasets", href: "/browse", icon: Database },
+    { title: "Upload Dataset", href: "/upload", icon: Upload },
+    { title: "My Contributions", href: "/contributions", icon: Users },
+    { title: "Verify Work", href: "/verify", icon: ShieldCheck },
+    { title: "Marketplace", href: "/downloads", icon: Download },
 ];
 
 export default function AppLayout({ children }) {
   const pathname = usePathname();
-  // State to control the slide-out menu's visibility
   const [menuOpen, setMenuOpen] = React.useState(false);
+
+  // Get global wallet state and connect function from the context
+  const { account, connectWallet, isLoading } = useWeb3();
 
   // This is the content that will appear inside the slide-out menu
   const NavContent = () => (
@@ -85,11 +88,9 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="relative z-10">
-      {/* This header is now visible on ALL screen sizes */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-slate-800/90 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            {/* The Sheet component wraps the menu button and its content */}
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
@@ -105,13 +106,25 @@ export default function AppLayout({ children }) {
             <h1 className="font-bold text-white">DataNexus</h1>
           </div>
           
-          <Button className="bg-gradient-to-r from-blue-500 to-purple-500">
-            Connect Wallet
-          </Button>
+          {/* CORRECTED: This part now uses the global state */}
+          <div className="flex items-center">
+            {account ? (
+              <div className="text-white text-sm bg-white/10 px-4 py-2 rounded-lg font-mono">
+                {`${account.substring(0, 6)}...${account.substring(account.length - 4)}`}
+              </div>
+            ) : (
+              <Button 
+                onClick={connectWallet} 
+                disabled={isLoading}
+                className="bg-gradient-to-r from-blue-500 to-purple-500"
+              >
+                {isLoading ? "Connecting..." : "Connect Wallet"}
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
-      {/* The main content is now pushed down to make space for the fixed header */}
       <main className="flex-1 pt-20">
         <div className="relative z-10">
           {children}

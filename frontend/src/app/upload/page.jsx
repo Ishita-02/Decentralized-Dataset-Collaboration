@@ -4,8 +4,13 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { PinataSDK } from "pinata";
+import Web3 from "web3";
 import { 
   Upload as UploadIcon, 
   FileText, 
@@ -36,9 +41,11 @@ export default function UploadPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
+  const pinataGateway = "harlequin-characteristic-hummingbird-431.mypinata.cloud";
+
   const pinata = new PinataSDK({
     pinataJwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI5YzY0ZmQ2My1mN2E1LTQzMTUtOGFlYS1jNmVhZTVjNjI0Y2QiLCJlbWFpbCI6ImlzaGl0YWdyYXdhbDAyMDdAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6ImZiNzY0ZjFhYzg4NjQ4Mjc4M2Y3Iiwic2NvcGVkS2V5U2VjcmV0IjoiZTg1ODNjYmY0MWMzNmUxYTE4ZWZjOTYxZjM4ODQ3NmM4NWVjYWY5ZjEyMzA0YzAwODU1ZjAwY2I1YmVhMTRhZSIsImV4cCI6MTc2NDU5MzgyM30._8OWC_eCp4HhVt49wu_u_AR3lSUN2Se-4CBElFdJD5I",
-    pinataGateway: "harlequin-characteristic-hummingbird-431.mypinata.cloud",
+    pinataGateway: pinataGateway,
   });
 
   const handleInputChange = (field, value) => {
@@ -66,32 +73,52 @@ export default function UploadPage() {
 
     try {
       // Step 1: Upload the file to IPFS via our secure API route
-      const form = new FormData();
-      form.append('file', file);
+      console.log(file)
+    //   const form = new File(file, file.name);
+      const upload = await pinata.upload.public.file(file);
       
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: form,
-      });
-
-      const result = await response.json();
-      if (!result.success) {
-        throw new Error(result.message || 'Failed to upload file to IPFS');
+      
+      if (!upload) {
+        throw new Error('Failed to upload file to IPFS');
       }
-      const ipfsHash = result.ipfsHash;
+      const ipfsHash = upload.cid;
 
       // Step 2: Call the smart contract with the IPFS hash
       await Web3Service.connectWallet();
       const price = Number(formData.download_price || 0);
-      const tokenURI = `ipfs://${ipfsHash}`; // Standard IPFS URI format
-      
-      await Web3Service.uploadDataset(price, tokenURI);
 
+        const rewardPoolInWei = Web3.utils.toWei(formData.reward_pool.toString(), 'ether');
+        console.log("reward pool wei", rewardPoolInWei);
+        console.log(`Approving ${formData.reward_pool} DATA tokens for the reward pool...`);
+        await Web3Service.approveTokenSpend(rewardPoolInWei);
+        console.log("Approval successful!");
+    
+
+      const tokenURI = `https://${pinataGateway}/ipfs/${ipfsHash}?pinataGatewayToken=UhHUR8T7QBjicM5i3ctXsWy89BJ0LHliIaURM3V7j6dhAospZY3pXepcgALAPk9d`; // Standard IPFS URI format
+      console.log("file uploaded", tokenURI, upload)
+
+
+      
+      const params = {
+        price: Number(formData.download_price || 0),
+        tokenURI: tokenURI,
+        title: formData.title,
+        description: formData.description,
+        mimeType: file.type,
+        size: file.size,
+        contributionReward: Number(formData.contribution_reward || 0),
+        verificationReward: Number(formData.verification_reward || 0),
+        totalRewardPool: Number(formData.reward_pool || 0),
+        category: formData.category
+      };
+
+      // Step 4: Call the updated Web3Service function with the params object
+      await Web3Service.uploadDataset(params);
       setSuccess(true);
       
       // Step 3: Navigate to the browse page after success
       setTimeout(() => {
-        router.push("/browse"); // CORRECTED: Use router.push
+        router.push("/browse"); 
       }, 2000);
 
     } catch (err) {
@@ -166,13 +193,56 @@ export default function UploadPage() {
           
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardHeader>
-              <CardTitle className="text-white">Dataset Information</CardTitle>
+                <CardTitle className="text-white">Dataset Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-                 {/* ... form fields for title, category, etc. ... */}
-                 {/* This content can remain the same */}
+                {/* Title and Category Fields */}
+                <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                    <Label htmlFor="title" className="text-white">Dataset Title *</Label>
+                    <Input
+                    id="title"
+                    required
+                    value={formData.title}
+                    onChange={(e) => handleInputChange('title', e.target.value)}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                    placeholder="e.g., Financial News for Sentiment Analysis"
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="category" className="text-white">Category *</Label>
+                    <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                    <SelectTrigger id="category" className="bg-white/5 border-white/10 text-white">
+                        <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="machine-learning">Machine Learning</SelectItem>
+                        <SelectItem value="finance">Finance</SelectItem>
+                        <SelectItem value="healthcare">Healthcare</SelectItem>
+                        <SelectItem value="research">Research</SelectItem>
+                        <SelectItem value="education">Education</SelectItem>
+                        <SelectItem value="marketing">Marketing</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                    </Select>
+                </div>
+                </div>
+
+                {/* Description Field */}
+                <div className="space-y-2">
+                <Label htmlFor="description" className="text-white">Description *</Label>
+                <Textarea
+                    id="description"
+                    required
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40 h-24"
+                    placeholder="Describe your dataset, its columns, purpose, and how it can be improved."
+                />
+                </div>
+
             </CardContent>
-           </Card>
+            </Card>
 
            <RewardSettings 
             formData={formData}

@@ -26,7 +26,7 @@ export default function StakeDialog({ onSuccess, onCancel }) {
     try {
       const amount = parseFloat(stakeAmount);
       if (amount < 1000) {
-        throw new Error("Minimum stake amount is 1000 DCT");
+        throw new Error("Minimum stake amount is 1000 DATA");
       }
 
       await Web3Service.stakeToVerify(amount);
@@ -46,7 +46,7 @@ export default function StakeDialog({ onSuccess, onCancel }) {
               <Shield className="w-5 h-5 text-blue-400" />
               Become a Verifier
             </CardTitle>
-            <p className="text-white/60 text-sm mt-1">Stake DCT tokens to start verifying</p>
+            <p className="text-white/60 text-sm mt-1">Stake DATA tokens to start verifying</p>
           </div>
           <Button
             variant="ghost"
@@ -73,7 +73,7 @@ export default function StakeDialog({ onSuccess, onCancel }) {
               <div className="text-sm">
                 <p className="text-blue-300 font-medium mb-2">Verifier Benefits:</p>
                 <ul className="text-blue-200/80 space-y-1">
-                  <li>• Earn 5 DCT per verification</li>
+                  <li>• Earn 5 DATA per verification</li>
                   <li>• Get rewards from slashed tokens</li>
                   <li>• Help maintain dataset quality</li>
                   <li>• Build reputation in the ecosystem</li>
@@ -84,7 +84,7 @@ export default function StakeDialog({ onSuccess, onCancel }) {
 
           {/* Stake Amount */}
           <div className="space-y-2">
-            <Label className="text-white">Stake Amount (DCT)</Label>
+            <Label className="text-white">Stake Amount (DATA)</Label>
             <div className="relative">
               <Coins className="absolute left-3 top-3 w-4 h-4 text-yellow-400" />
               <Input
@@ -97,7 +97,7 @@ export default function StakeDialog({ onSuccess, onCancel }) {
                 placeholder="1000"
               />
             </div>
-            <p className="text-white/60 text-xs">Minimum: 1000 DCT tokens</p>
+            <p className="text-white/60 text-xs">Minimum: 1000 DATA tokens</p>
           </div>
 
           {/* Warning */}

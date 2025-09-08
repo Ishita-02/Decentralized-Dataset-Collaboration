@@ -124,7 +124,7 @@ export default function Downloads() {
               </p>
               <div className="flex items-center gap-2 text-white/60 text-sm">
                 <Coins className="w-4 h-4 text-yellow-400" />
-                <span>Your Balance: {user?.tokens_balance || 0} DCT</span>
+                <span>Your Balance: {user?.tokens_balance || 0} DATA</span>
               </div>
             </div>
           </CardContent>
@@ -214,7 +214,7 @@ export default function Downloads() {
                       <div className="flex items-center gap-2">
                         <Coins className="w-4 h-4 text-yellow-400" />
                         <span className="text-white font-medium">
-                          {dataset.download_price === 0 ? 'Free' : `${dataset.download_price} DCT`}
+                          {dataset.download_price === 0 ? 'Free' : `${dataset.download_price} DATA`}
                         </span>
                       </div>
                       {dataset.download_price > 0 && (

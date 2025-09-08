@@ -5,11 +5,420 @@ class Web3Service {
   constructor() {
     this.web3 = null;
     this.contract = null;
-    this.account = "0xDC984157F54F2e186cb6E9082bb998CbE7C44c23";
+    this.account = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+    this.tokenContract = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
     
     // Replace with your deployed contract address
-    this.contractAddress = "0x892289a0cBc5A41e2bD46b462310546cEf46cc97"; // UPDATE THIS
+    this.contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // UPDATE THIS
     
+    this.tokenContractABI = [
+      {
+        "inputs": [],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "allowance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "needed",
+            "type": "uint256"
+          }
+        ],
+        "name": "ERC20InsufficientAllowance",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "balance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "needed",
+            "type": "uint256"
+          }
+        ],
+        "name": "ERC20InsufficientBalance",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "approver",
+            "type": "address"
+          }
+        ],
+        "name": "ERC20InvalidApprover",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "receiver",
+            "type": "address"
+          }
+        ],
+        "name": "ERC20InvalidReceiver",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          }
+        ],
+        "name": "ERC20InvalidSender",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          }
+        ],
+        "name": "ERC20InvalidSpender",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnableInvalidOwner",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          }
+        ],
+        "name": "OwnableUnauthorizedAccount",
+        "type": "error"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "Approval",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "Transfer",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          }
+        ],
+        "name": "allowance",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "spender",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "approve",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+          {
+            "internalType": "uint8",
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "mint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "transfer",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "value",
+            "type": "uint256"
+          }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      }
+    ]
+
     // Contract ABI (simplified - add full ABI from your compiled contract)
     this.contractABI = [
       {
@@ -115,15 +524,15 @@ class Web3Service {
           },
           {
             "indexed": false,
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
           },
           {
             "indexed": false,
-            "internalType": "string",
-            "name": "tokenURI",
-            "type": "string"
+            "internalType": "uint256",
+            "name": "totalRewardPool",
+            "type": "uint256"
           }
         ],
         "name": "DatasetUploaded",
@@ -272,6 +681,25 @@ class Web3Service {
         "type": "function"
       },
       {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_user",
+            "type": "address"
+          }
+        ],
+        "name": "dataTokenBalance",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
         "inputs": [],
         "name": "datasetCount",
         "outputs": [
@@ -310,9 +738,161 @@ class Web3Service {
             "type": "uint256"
           },
           {
+            "internalType": "string",
+            "name": "title",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "size",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "mimeType",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "createdAt",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "category",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "contributionReward",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "verificationReward",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "rewardPool",
+            "type": "uint256"
+          },
+          {
             "internalType": "uint256",
             "name": "totalSharePoints",
             "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getAllDatasets",
+        "outputs": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+              },
+              {
+                "internalType": "address",
+                "name": "creator",
+                "type": "address"
+              },
+              {
+                "internalType": "string",
+                "name": "currentURI",
+                "type": "string"
+              },
+              {
+                "internalType": "uint256",
+                "name": "price",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "title",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "description",
+                "type": "string"
+              },
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "mimeType",
+                "type": "string"
+              },
+              {
+                "internalType": "uint256",
+                "name": "createdAt",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "contributionReward",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "verificationReward",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "rewardPool",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct DataMarketplace.DatasetView[]",
+            "name": "",
+            "type": "tuple[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "getContributorCount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_id",
+            "type": "uint256"
+          }
+        ],
+        "name": "getUserDatasetCurrentURI",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
           }
         ],
         "stateMutability": "view",
@@ -433,6 +1013,19 @@ class Web3Service {
       },
       {
         "inputs": [],
+        "name": "totalVerificattions",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
         "name": "unstake",
         "outputs": [],
         "stateMutability": "nonpayable",
@@ -441,14 +1034,61 @@ class Web3Service {
       {
         "inputs": [
           {
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "tokenURI",
-            "type": "string"
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "price",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "tokenURI",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "title",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "description",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "mimeType",
+                "type": "string"
+              },
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "contributionReward",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "verificationReward",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "totalRewardPool",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "category",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct DataMarketplace.UploadParams",
+            "name": "params",
+            "type": "tuple"
           }
         ],
         "name": "uploadDataset",
@@ -457,13 +1097,38 @@ class Web3Service {
         "type": "function"
       },
       {
-        "inputs": [],
-        "name": "verifierRewardPool",
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_user",
+            "type": "address"
+          }
+        ],
+        "name": "userContributions",
         "outputs": [
           {
-            "internalType": "uint256",
+            "internalType": "uint256[]",
             "name": "",
-            "type": "uint256"
+            "type": "uint256[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_user",
+            "type": "address"
+          }
+        ],
+        "name": "userDataset",
+        "outputs": [
+          {
+            "internalType": "uint256[]",
+            "name": "",
+            "type": "uint256[]"
           }
         ],
         "stateMutability": "view",
@@ -530,13 +1195,13 @@ class Web3Service {
         "stateMutability": "view",
         "type": "function"
       }
-    ];
+    ]
   }
 
   async init() {
     if (typeof window.ethereum !== 'undefined') {
       // Modern dapp browsers
-      this.web3 = new Web3(window.ethereum);
+      this.web3 = new Web3("http://127.0.0.1:8545/");
       
       try {
         // Request account access
@@ -546,6 +1211,7 @@ class Web3Service {
         
         // Initialize contract
         this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
+        this.tokenContract = new this.web3.eth.Contract(this.tokenContractABI, this.tokenContract);
         
         return true;
       } catch (error) {
@@ -589,11 +1255,30 @@ class Web3Service {
     return this.account;
   }
 
+  async approveTokenSpend(amountInWei) {
+    if (!this.tokenContract || !this.account) {
+      throw new Error("Web3 not initialized. Please connect your wallet.");
+    }
+    try {
+      // Call the approve function on the DATAToken contract
+      const tx = await this.tokenContract.methods
+        .approve(this.contractAddress, amountInWei)
+        .send({ from: this.account });
+        console.log("approve txn", tx)
+      return tx.transactionHash;
+    } catch (error) {
+      console.error("Error approving token spend:", error);
+      throw error;
+    }
+  }
+
+
   async getCurrentUser() {
     // Derive a pseudo user from wallet. No DB.
     const connected = await this.isConnected();
     const address = connected ? this.account : null;
-    const balance = connected ? await this.getWithdrawableBalance().catch(() => 0) : 0;
+    const earned = connected ? await this.getWithdrawableBalance().catch(() => 0) : 0;
+    const balance = connected ? await this.contract.methods.dataTokenBalance(this.account) : 0;
     return {
       id: address || 'guest',
       email: address ? `${address.toLowerCase()}@wallet` : 'guest@wallet',
@@ -603,7 +1288,7 @@ class Web3Service {
       reputation_score: 0,
       contributions_count: 0,
       verifications_count: 0,
-      total_earned: 0,
+      total_earned: Number(earned) || 0,
       specializations: []
     };
   }
@@ -649,17 +1334,24 @@ class Web3Service {
     }
   }
 
-  async uploadDataset(price, tokenURI) {
+  async uploadDataset(params) {
     if (!this.contract || !this.account) {
       throw new Error("Web3 not initialized");
     }
 
     try {
-      const priceWei = this.web3.utils.toWei(price.toString(), 'ether');
-      
-      const tx = await this.contract.methods.uploadDataset(priceWei, tokenURI).send({
-        from: this.account,
-        gas: 300000
+      // const txParams = {
+      //   ...params,
+      //   price: this.web3.utils.toWei(params.price.toString(), 'ether'),
+      //   contributionReward: this.web3.utils.toWei(params.contributionReward.toString(), 'ether'),
+      //   verificationReward: this.web3.utils.toWei(params.verificationReward.toString(), 'ether'),
+      //   totalRewardPool: this.web3.utils.toWei(params.totalRewardPool.toString(), 'ether'),
+      // };
+
+      console.log(params)
+
+      const tx = await this.contract.methods.uploadDataset(params).send({
+        from: this.account
       });
       
       return tx.transactionHash;
@@ -764,7 +1456,7 @@ class Web3Service {
     }
     try {
       if (this.contract?.methods?.datasets) {
-        const items = await this.contract.methods.datasets(1).call();
+        const items = await this.contract.methods.getAllDatasets().call();
         console.log("items from datasets", items)
         return ([items] || []).map((d, idx) => ({
           id: Number(d.id ?? idx),
@@ -787,6 +1479,19 @@ class Web3Service {
     }
     // Fallback: return empty list so UI still renders
     return [];
+  }
+
+  async getUserDatasetCurrentId(id) {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const tokenURI = await this.contract.methods.getUserDatasetCurrentId(id).call();
+      return tokenURI;
+    } catch (e) {
+      console.warn('getAllDatasets view failed, returning empty list');
+      return;
+    }
   }
 }
 

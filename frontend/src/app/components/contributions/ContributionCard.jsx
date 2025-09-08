@@ -93,7 +93,7 @@ export default function ContributionCard({ contribution }) {
                 <span className="text-white font-medium">Reward Earned</span>
               </div>
               <span className="text-green-400 font-bold">
-                {contribution.tokens_earned} DCT
+                {contribution.tokens_earned} DATA
               </span>
             </div>
           </div>

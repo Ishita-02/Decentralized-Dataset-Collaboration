@@ -94,8 +94,8 @@ export default function RecentActivity({ activity, isLoading }) {
                   </div>
                   <p className="text-sm text-white/60 mb-2">
                     {item.type === 'contribution' 
-                      ? `${item.contribution_type?.replace('_', ' ')} • ${item.tokens_earned || 0} DCT earned`
-                      : `Review completed • ${item.tokens_earned || 0} DCT earned`
+                      ? `${item.contribution_type?.replace('_', ' ')} • ${item.tokens_earned || 0} DATA earned`
+                      : `Review completed • ${item.tokens_earned || 0} DATA earned`
                     }
                   </p>
                   <p className="text-xs text-white/40">

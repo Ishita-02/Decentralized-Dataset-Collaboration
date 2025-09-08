@@ -21,7 +21,7 @@ export default function RewardSettings({ formData, onUpdate }) {
           <div className="space-y-2">
             <Label className="text-white flex items-center gap-2">
               <Users className="w-4 h-4 text-green-400" />
-              Contribution Reward (DCT)
+              Contribution Reward (DATA)
             </Label>
             <Input
               type="number"
@@ -36,7 +36,7 @@ export default function RewardSettings({ formData, onUpdate }) {
           <div className="space-y-2">
             <Label className="text-white flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-purple-400" />
-              Verification Reward (DCT)
+              Verification Reward (DATA)
             </Label>
             <Input
               type="number"
@@ -51,7 +51,7 @@ export default function RewardSettings({ formData, onUpdate }) {
 
         <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label className="text-white">Total Reward Pool (DCT)</Label>
+            <Label className="text-white">Total Reward Pool (DATA)</Label>
             <Input
               type="number"
               min="10"
@@ -65,7 +65,7 @@ export default function RewardSettings({ formData, onUpdate }) {
           <div className="space-y-2">
             <Label className="text-white flex items-center gap-2">
               <Download className="w-4 h-4 text-blue-400" />
-              Download Price (DCT)
+              Download Price (DATA)
             </Label>
             <Input
               type="number"

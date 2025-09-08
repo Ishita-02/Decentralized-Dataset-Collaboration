@@ -75,7 +75,7 @@ export default function VerificationCard({ contribution, onVote }) {
             <Coins className="w-4 h-4 text-yellow-400" />
             <span className="text-white font-medium">Verification Reward</span>
             <Badge className="bg-yellow-400/20 text-yellow-300 border-yellow-400/30">
-              5 DCT
+              5 DATA
             </Badge>
           </div>
         </div>
