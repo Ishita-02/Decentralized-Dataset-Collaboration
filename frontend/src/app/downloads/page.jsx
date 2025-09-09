@@ -52,7 +52,10 @@ export default function Downloads() {
 
   const loadData = async () => {
     try {
+      await Web3Service.init();
+
       const currentUser = await Web3Service.getCurrentUser();
+      console.log("current user from downloads", currentUser)
       setUser(currentUser);
 
       // Load verified and published datasets available for download
@@ -73,9 +76,7 @@ export default function Downloads() {
         // Free download - just record the download
         window.open(dataset.file_url, '_blank');
       } else {
-        // Paid download - use blockchain
-        const web3 = new Web3("http://127.0.0.1:8545/");
-        // const downloadPriceInWei = web3.utils.fromWei(dataset.download_price * 1e18, 'ether')
+       
         await Web3Service.approveTokenSpend(dataset.download_price * 1e18 *1e18)
         console.log("dataset", dataset)
         await Web3Service.purchaseDataset(dataset.id);
@@ -209,7 +210,7 @@ export default function Downloads() {
                     </div>
                     <div className="flex items-center gap-1 text-white/60">
                       <FileText className="w-3 h-3" />
-                      <span>{dataset.size ? `${dataset.size} MB` : 'N/A'}</span>
+                      <span>{dataset.size ? `${dataset.size / 1e6} MB` : 'N/A'}</span>
                     </div>
                   </div>
 

@@ -1402,7 +1402,7 @@ class Web3Service {
   
     try {
 
-      console.log(this.tokenContract, this.contractAddress)
+      // console.log(this.tokenContract, this.contractAddress)
       // CORRECT: Get the current allowance using await, .call(), and the correct arguments.
       const currentAllowance = await this.tokenContract.methods
         .allowance(this.account, this.contractAddress)
