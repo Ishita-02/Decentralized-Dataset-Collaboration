@@ -35,14 +35,14 @@ export default function StatsGrid({ stats, userTokens, userReputation, isLoading
     },
     {
       title: "Your Tokens",
-      value: userTokens,
+      value: `${userTokens} DATA`,
       icon: Coins,
       gradient: "from-yellow-500 to-orange-500",
       bgGradient: "from-yellow-500/10 to-orange-500/10"
     },
     {
       title: "Total Earned",
-      value: `${stats.totalEarned} DATA`,
+      value: `${stats.totalEarned * 1e18} DATA`,
       icon: TrendingUp,
       gradient: "from-indigo-500 to-purple-500",
       bgGradient: "from-indigo-500/10 to-purple-500/10"

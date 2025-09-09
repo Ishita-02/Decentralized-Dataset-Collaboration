@@ -14,6 +14,7 @@ import {
 import { format } from "date-fns";
 
 export default function ContributionCard({ contribution }) {
+  console.log("contribution card", contribution)
   const getStatusIcon = () => {
     switch (contribution.status) {
       case 'approved':
@@ -64,10 +65,10 @@ export default function ContributionCard({ contribution }) {
               <FileText className="w-4 h-4" />
               <span className="capitalize">{contribution.contribution_type?.replace('_', ' ')}</span>
             </div>
-            <div className="flex items-center gap-1">
+            {/* <div className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
               <span>{format(new Date(contribution.created_date), 'MMM d, yyyy')}</span>
-            </div>
+            </div> */}
           </div>
           
           {contribution.file_url && (
@@ -93,7 +94,7 @@ export default function ContributionCard({ contribution }) {
                 <span className="text-white font-medium">Reward Earned</span>
               </div>
               <span className="text-green-400 font-bold">
-                {contribution.tokens_earned} DATA
+                {contribution.tokens_earned} DCT
               </span>
             </div>
           </div>

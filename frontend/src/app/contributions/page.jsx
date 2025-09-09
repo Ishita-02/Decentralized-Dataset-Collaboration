@@ -43,14 +43,21 @@ export default function Contributions() {
 
   const loadData = async () => {
     try {
+      await Web3Service.init();
+
       const currentUser = await Web3Service.getCurrentUser();
+      console.log("current user", currentUser)
       setUser(currentUser);
 
-      const [userContributions, allDatasets] = await Promise.all([
-        Promise.resolve([]),
-        Web3Service.getAllDatasets()
+      const [allDatasets, userContributions] = await Promise.all([
+        await Web3Service.getAllDatasets(),
+        await Web3Service.userContributions() // Use the correct function here
       ]);
 
+      console.log("all datasets", allDatasets)
+      console.log("user contributions", userContributions)
+
+   
       setContributions(userContributions);
       setDatasets(allDatasets);
     } catch (error) {
@@ -92,6 +99,8 @@ export default function Contributions() {
     const totalEarned = contributions
       .filter(c => c.status === 'approved')
       .reduce((sum, c) => sum + (c.tokens_earned || 0), 0);
+
+      console.log("contributions", contributions)
 
     return { pending, approved, rejected, totalEarned };
   };
@@ -216,7 +225,7 @@ export default function Contributions() {
             ) : (
               <div className="space-y-4">
                 {contributions.map((contribution) => (
-                  <ContributionCard key={contribution.id} contribution={contribution} />
+                  <ContributionCard key = {Number(contribution.datasetId)} contribution={contribution} />
                 ))}
               </div>
             )}

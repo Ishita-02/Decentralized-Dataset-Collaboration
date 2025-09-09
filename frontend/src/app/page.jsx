@@ -23,10 +23,12 @@ import StatsGrid from "./components/dashboard/StataGrid";
 import RecentActivity from "./components/dashboard/RecentActivity";
 import QuickActions from "./components/dashboard/QuickActions";
 import LeaderboardCard from "./components/dashboard/LeaderboardCard";
+import { useWeb3 } from "../app/context/Web3Provider";
 import Web3Service from "./components/services/Web3Service";
 
 
 export default function Dashboard() {
+  const { account } = useWeb3();
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState({
     datasets: 0,
@@ -40,9 +42,18 @@ export default function Dashboard() {
   const router = useRouter();
 
 
+  // useEffect(() => {
+  //   loadDashboardData();
+  // }, []);
+
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    // Only load the leaderboard if the wallet is connected
+    if (account) {
+      loadDashboardData();
+    } else {
+        setIsLoading(false); // If no wallet, stop loading
+    }
+  }, [account]);
 
   const loadDashboardData = async () => {
     try {
@@ -104,7 +115,7 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <StatsGrid 
           stats={stats} 
-          userTokens={user?.tokens_balance || 0}
+          userTokens={user?.tokens_balance / 1e18 || 0}
           userReputation={user?.reputation_score || 0}
           isLoading={isLoading}
         />

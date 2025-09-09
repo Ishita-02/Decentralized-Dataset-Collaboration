@@ -2,6 +2,7 @@
 
 
 import React, { useState, useEffect, useCallback } from "react";
+import Web3 from "web3";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -73,6 +74,10 @@ export default function Downloads() {
         window.open(dataset.file_url, '_blank');
       } else {
         // Paid download - use blockchain
+        const web3 = new Web3("http://127.0.0.1:8545/");
+        // const downloadPriceInWei = web3.utils.fromWei(dataset.download_price * 1e18, 'ether')
+        await Web3Service.approveTokenSpend(dataset.download_price * 1e18 *1e18)
+        console.log("dataset", dataset)
         await Web3Service.purchaseDataset(dataset.id);
         // After successful purchase, open download
         window.open(dataset.file_url, '_blank');
@@ -124,7 +129,7 @@ export default function Downloads() {
               </p>
               <div className="flex items-center gap-2 text-white/60 text-sm">
                 <Coins className="w-4 h-4 text-yellow-400" />
-                <span>Your Balance: {user?.tokens_balance || 0} DATA</span>
+                <span>Your Balance: {user?.tokens_balance / 1e18 || 0} DATA</span>
               </div>
             </div>
           </CardContent>
@@ -204,7 +209,7 @@ export default function Downloads() {
                     </div>
                     <div className="flex items-center gap-1 text-white/60">
                       <FileText className="w-3 h-3" />
-                      <span>{dataset.size_mb ? `${dataset.size_mb}MB` : 'N/A'}</span>
+                      <span>{dataset.size ? `${dataset.size} MB` : 'N/A'}</span>
                     </div>
                   </div>
 
@@ -214,7 +219,7 @@ export default function Downloads() {
                       <div className="flex items-center gap-2">
                         <Coins className="w-4 h-4 text-yellow-400" />
                         <span className="text-white font-medium">
-                          {dataset.download_price === 0 ? 'Free' : `${dataset.download_price} DATA`}
+                          {dataset.download_price === 0 ? 'Free' : `${dataset.download_price * 1e18} DATA`}
                         </span>
                       </div>
                       {dataset.download_price > 0 && (

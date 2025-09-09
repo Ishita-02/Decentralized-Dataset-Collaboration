@@ -9,15 +9,22 @@ import {
   TrendingUp
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWeb3 } from "../../context/Web3Provider";
 import Web3Service from "../services/Web3Service";
 
 export default function LeaderboardCard({ isLoading }) {
+  const { account } = useWeb3();
   const [topUsers, setTopUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadLeaderboard();
-  }, []);
+    // Only load the leaderboard if the wallet is connected
+    if (account) {
+      loadLeaderboard();
+    } else {
+        setLoading(false); // If no wallet, stop loading
+    }
+  }, [account]);
 
   const loadLeaderboard = async () => {
     try {
@@ -90,7 +97,7 @@ export default function LeaderboardCard({ isLoading }) {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-yellow-400 text-sm">
-                    {user.total_earned || 0} DATA
+                    {user.total_earned * 1e18 || 0} DATA
                   </p>
                 </div>
               </div>

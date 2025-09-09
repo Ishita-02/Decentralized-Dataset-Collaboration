@@ -1,117 +1,94 @@
+// Verify.jsx - CORRECTED VERSION
 "use client"
 
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useWeb3 } from '../context/Web3Provider'; // Make sure the path is correct
+import Web3Service from '../../app/components/services/Web3Service'; // We still need this for now
 
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useRouter } from "next/navigation"; 
-import { useWeb3 } from "../context/Web3Provider"; 
-import { 
-  ShieldCheck,
-  Clock,
-  CheckCircle,
-  XCircle,
-  ArrowLeft,
-  Coins,
-  Users,
-  Award,
-  FileText,
-  AlertCircle
-} from "lucide-react";
-import { createPageUrl } from "@/components/ui/utils";
-
-import VerificationCard from "../components/verify/VerificationCard";
-import StakeDialog from "../components/verify/StakeDialog";
-import Web3Service from "../components/services/Web3Service"; // Updated import path
+// Import your UI components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Coins, ShieldCheck, Clock, CheckCircle, Award, FileText } from 'lucide-react';
+import StakeDialog from '../components/verify/StakeDialog'; // Assuming you have this
+import VerificationCard from '../components/verify/VerificationCard'; // Assuming you have this
 
 export default function Verify() {
-  const [pendingContributions, setPendingContributions] = useState([]);
-  const [myVerifications, setMyVerifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
-//   const [isVerifier, setIsVerifier] = useState(false);
-//   const [stakedAmount, setStakedAmount] = useState(0);
-  const [showStakeDialog, setShowStakeDialog] = useState(false);
-  const [web3Connected, setWeb3Connected] = useState(false);
-  const { account, isVerifier, stakedAmount, connectWallet } = useWeb3();
-
+  // ✅ 1. Get ALL web3 state and functions from the hook
+  const { account, isVerifier, stakedAmount, connectWallet, web3 } = useWeb3();
+  
   const router = useRouter();
 
+  // State for data fetched from the contract
+  const [pendingContributions, setPendingContributions] = useState([]);
+  const [myVerifications, setMyVerifications] = useState([]); // You'll need a way to fetch this
+  const [loading, setLoading] = useState(true);
+  
+  // State for UI control
+  const [showStakeDialog, setShowStakeDialog] = useState(false);
+
+  // ❌ REMOVED: Conflicting local state like isVerifiers, web3Connected, etc.
+
+  // ✅ 2. A single, clean useEffect to load data
   useEffect(() => {
-    // This page only needs to load its own specific data now
     const loadPageData = async () => {
+      setLoading(true);
       if (isVerifier) {
-        const proposals = await Web3Service.getPendingProposals();
-        setPendingContributions(proposals);
+        console.log("verifier", isVerifier)
+        // Fetch data relevant only to verifiers
+        // const proposals = await Web3Service.getPendingProposals();
+        // setPendingContributions(proposals);
+        // TODO: You would also fetch the user's past verifications here
+        // const myReviews = await Web3Service.getMyVerifications(account);
+        // setMyVerifications(myReviews);
       }
       setLoading(false);
     };
 
-    if (account) { // Only load data if the user is connected
+    // Only load data if the user's wallet is connected.
+    if (account) {
       loadPageData();
     } else {
-      setLoading(false);
+      // If no account, we aren't loading anything.
+      setLoading(false); 
     }
-  }, [account, isVerifier]); 
-
-  const loadData = async () => {
-    try {
-      const currentUser = await Web3Service.getCurrentUser();
-      setUser(currentUser);
-
-      // Without DB, show empty lists for now
-      setPendingContributions([]);
-      setMyVerifications([]);
-    } catch (error) {
-      console.error("Error loading data:", error);
-    }
-    setLoading(false);
-  };
-
-  const checkVerifierStatus = async () => {
-    try {
-      const connected = await Web3Service.isConnected();
-      setWeb3Connected(connected);
-      
-      if (connected) {
-        const verifierInfo = await Web3Service.getVerifierInfo();
-        setIsVerifier(verifierInfo.isVerifier);
-        setStakedAmount(verifierInfo.stakedAmount);
-      }
-    } catch (error) {
-      console.error("Error checking verifier status:", error);
-    }
-  };
+  }, [account, isVerifier]); // This hook re-runs whenever account or isVerifier status changes
 
   const handleStakeSuccess = () => {
+    // The useWeb3 hook should automatically update isVerifier.
+    // We just need to close the dialog.
     setShowStakeDialog(false);
-    checkVerifierStatus();
+    // The useEffect will automatically re-fetch data because `isVerifier` will change.
   };
 
   const handleVote = async (contributionId, proposalId, vote) => {
     try {
-      // Submit vote to blockchain
       await Web3Service.voteOnContribution(proposalId, vote);
-      
-      // Refresh data
-      loadData();
+      // Refresh pending contributions after voting
+      const proposals = await Web3Service.getPendingProposals();
+      setPendingContributions(proposals);
     } catch (error) {
       console.error("Error submitting vote:", error);
     }
   };
 
+  // ✅ 3. Correctly format the staked amount from Wei to Ether for display
+  const formattedStakedAmount = stakedAmount && web3 ? web3.utils.fromWei(stakedAmount.toString(), 'ether') : 0;
+
+  // The rest of your JSX remains largely the same, but uses the corrected state.
+  
   const getVerificationStats = () => {
     const completed = myVerifications.filter(v => v.status === 'completed').length;
     const totalEarned = myVerifications
-      .filter(v => v.status === 'completed')
-      .reduce((sum, v) => sum + (v.tokens_earned || 0), 0);
+        .filter(v => v.status === 'completed')
+        .reduce((sum, v) => sum + (v.tokens_earned || 0), 0);
 
     return { completed, totalEarned };
   };
 
-  const stats = getVerificationStats();
+    const stats = getVerificationStats();
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -206,7 +183,7 @@ export default function Verify() {
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardContent className="p-6 text-center">
                 <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-white">{stats.completed}</div>
+                <div className="text-2xl font-bold text-white">{stats?.completed}</div>
                 <p className="text-white/60 text-sm">Reviews Completed</p>
               </CardContent>
             </Card>
@@ -214,7 +191,7 @@ export default function Verify() {
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardContent className="p-6 text-center">
                 <Coins className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-white">{stats.totalEarned}</div>
+                <div className="text-2xl font-bold text-white">{stats?.totalEarned}</div>
                 <p className="text-white/60 text-sm">DATA Earned</p>
               </CardContent>
             </Card>

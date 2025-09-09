@@ -31,11 +31,31 @@ export default function DatasetDetailPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const preview = await Web3Service.getUserDatasetCurrentId(id);
-        setPreviewData(preview);
+        // ✅ STEP 1: Fetch contract details and IPFS URL in parallel
+        const [details, ipfsUrl] = await Promise.all([
+          Web3Service.getDatasetById(1),
+          Web3Service.getUserDatasetCurrentId(id)
+        ]);
+
+        // ✅ STEP 2: Set the main dataset state
+        setDataset(details);
+        console.log("Dataset Details:", details);
+        console.log("IPFS URL:", ipfsUrl);
+
+        // ✅ STEP 3: If an IPFS URL exists, fetch and parse its content
+        if (ipfsUrl) {
+          const response = await fetch(ipfsUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch from IPFS: ${response.statusText}`);
+          }
+          const csvText = await response.text();
+          const parsedData = parseCsvData(csvText);
+          setPreviewData(parsedData);
+          console.log("Parsed Preview Data:", parsedData);
+        }
     
       } catch (err) {
-        setError("Failed to load dataset details. It may not exist on the blockchain.");
+        setError("Failed to load dataset details. Please check the ID and your connection.");
         console.error(err);
       }
       setIsLoading(false);
@@ -43,6 +63,16 @@ export default function DatasetDetailPage() {
 
     loadData();
   }, [id]);
+
+  const parseCsvData = (csvText) => {
+    if (!csvText || typeof csvText !== 'string') {
+      return { header: [], rows: [] };
+    }
+    const lines = csvText.trim().split('\n');
+    const header = lines.length > 0 ? lines[0].split(',') : [];
+    const rows = lines.slice(1).map(line => line.split(','));
+    return { header, rows };
+  };
 
   if (isLoading) return <p className="text-center text-white/70 py-10">Loading dataset from the blockchain...</p>;
   if (error) return <p className="text-center text-red-500 py-10">{error}</p>;

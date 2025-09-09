@@ -87,6 +87,18 @@ contract DataMarketplace {
         mapping(address => bool) voteChoice; 
     }
 
+    struct ProposalData {
+        uint256 proposalId; // Good practice to return the ID
+        uint256 datasetId;
+        address proposer;
+        string proposedURI;
+        uint256 voteDeadline;
+        uint256 yesVotes;
+        uint256 noVotes;
+        bool resolved;
+        address[] voters;
+    }
+
     // --- State Variables ---
     mapping(uint256 => Dataset) public datasets;
     mapping(address => Verifier) public verifiers;
@@ -310,22 +322,39 @@ contract DataMarketplace {
         emit RewardsClaimed(msg.sender, amount);
     }
 
-    function userContributions(address _user) external view returns (uint[] memory) {
+    function userContributions(address _user) external view returns (ProposalData[] memory) {
         uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].proposer == _user) {
                 count++;
             }
         }
+
         if (count == 0) {
-            return new uint[](0);
+            return new ProposalData[](0);
         }
-        uint[] memory userProposals = new uint[](count);
+
+        // This array now holds the mapping-free struct
+        ProposalData[] memory userProposals = new ProposalData[](count);
         uint counter = 0;
 
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].proposer == _user) {
-                userProposals[counter] = i;
+                // Get a reference to the proposal in storage
+                ContributionProposal storage p = proposals[i];
+                
+                // Manually create the ProposalData struct in memory
+                userProposals[counter] = ProposalData({
+                    proposalId: i,
+                    datasetId: p.datasetId,
+                    proposer: p.proposer,
+                    proposedURI: p.proposedURI,
+                    voteDeadline: p.voteDeadline,
+                    yesVotes: p.yesVotes,
+                    noVotes: p.noVotes,
+                    resolved: p.resolved,
+                    voters: p.voters
+                });
                 counter++;
             }
         }
@@ -395,6 +424,25 @@ contract DataMarketplace {
         }
 
         return allDatasets;
+    }
+
+    function getDatasetById(uint256 _id) external view returns(DatasetView memory) {
+        Dataset storage d = datasets[_id];
+        return DatasetView({
+            id: _id,
+            creator: d.creator,
+            currentURI: d.currentURI,
+            price: d.price,
+            title: d.title,
+            description: d.description,
+            size: d.size,
+            mimeType: d.mimeType,
+            createdAt: d.createdAt,
+            contributionReward: d.contributionReward,
+            verificationReward: d.verificationReward,
+            rewardPool: d.rewardPool,
+            category: d.category
+        });
     }
 
 }
