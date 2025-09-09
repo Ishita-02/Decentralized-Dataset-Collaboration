@@ -422,6 +422,13 @@ class Web3Service {
     // Contract ABI (simplified - add full ABI from your compiled contract)
     this.contractABI = [
       {
+        "inputs": [],
+        "name": "claimRewards",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
         "inputs": [
           {
             "internalType": "address",
@@ -539,6 +546,50 @@ class Web3Service {
         "type": "event"
       },
       {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "datasetId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "proposedURI",
+            "type": "string"
+          }
+        ],
+        "name": "proposeContribution",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "datasetId",
+            "type": "uint256"
+          }
+        ],
+        "name": "purchaseDataset",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "proposalId",
+            "type": "uint256"
+          }
+        ],
+        "name": "resolveContribution",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
         "anonymous": false,
         "inputs": [
           {
@@ -556,6 +607,85 @@ class Web3Service {
         ],
         "name": "RewardsClaimed",
         "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "stakeToVerify",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "unstake",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "price",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "tokenURI",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "title",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "description",
+                "type": "string"
+              },
+              {
+                "internalType": "string",
+                "name": "mimeType",
+                "type": "string"
+              },
+              {
+                "internalType": "uint256",
+                "name": "size",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "contributionReward",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "verificationReward",
+                "type": "uint256"
+              },
+              {
+                "internalType": "uint256",
+                "name": "totalRewardPool",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "category",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct DataMarketplace.UploadParams",
+            "name": "params",
+            "type": "tuple"
+          }
+        ],
+        "name": "uploadDataset",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
       },
       {
         "anonymous": false,
@@ -583,6 +713,24 @@ class Web3Service {
         "type": "event"
       },
       {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "proposalId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "vote",
+            "type": "bool"
+          }
+        ],
+        "name": "voteOnContribution",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
         "inputs": [],
         "name": "CONTRIBUTOR_REWARD_SHARES",
         "outputs": [
@@ -598,97 +746,6 @@ class Web3Service {
       {
         "inputs": [],
         "name": "CREATOR_INITIAL_SHARES",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "MINIMUM_STAKE",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "REWARD_POOL_DISTRIBUTION_PERCENT",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "SLASH_PERCENTAGE",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "VOTE_DURATION",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "claimRewards",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "dataToken",
-        "outputs": [
-          {
-            "internalType": "contract IERC20",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_user",
-            "type": "address"
-          }
-        ],
-        "name": "dataTokenBalance",
         "outputs": [
           {
             "internalType": "uint256",
@@ -793,6 +850,38 @@ class Web3Service {
       },
       {
         "inputs": [],
+        "name": "dataToken",
+        "outputs": [
+          {
+            "internalType": "contract IERC20",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_user",
+            "type": "address"
+          }
+        ],
+        "name": "dataTokenBalance",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
         "name": "getAllDatasets",
         "outputs": [
           {
@@ -856,6 +945,11 @@ class Web3Service {
                 "internalType": "uint256",
                 "name": "rewardPool",
                 "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "category",
+                "type": "string"
               }
             ],
             "internalType": "struct DataMarketplace.DatasetView[]",
@@ -893,6 +987,19 @@ class Web3Service {
             "internalType": "string",
             "name": "",
             "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "MINIMUM_STAKE",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
           }
         ],
         "stateMutability": "view",
@@ -961,54 +1068,29 @@ class Web3Service {
         "type": "function"
       },
       {
-        "inputs": [
+        "inputs": [],
+        "name": "REWARD_POOL_DISTRIBUTION_PERCENT",
+        "outputs": [
           {
             "internalType": "uint256",
-            "name": "datasetId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "proposedURI",
-            "type": "string"
-          }
-        ],
-        "name": "proposeContribution",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "datasetId",
+            "name": "",
             "type": "uint256"
           }
         ],
-        "name": "purchaseDataset",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "proposalId",
-            "type": "uint256"
-          }
-        ],
-        "name": "resolveContribution",
-        "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function"
       },
       {
         "inputs": [],
-        "name": "stakeToVerify",
-        "outputs": [],
-        "stateMutability": "nonpayable",
+        "name": "SLASH_PERCENTAGE",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
         "type": "function"
       },
       {
@@ -1022,78 +1104,6 @@ class Web3Service {
           }
         ],
         "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "unstake",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "tokenURI",
-                "type": "string"
-              },
-              {
-                "internalType": "string",
-                "name": "title",
-                "type": "string"
-              },
-              {
-                "internalType": "string",
-                "name": "description",
-                "type": "string"
-              },
-              {
-                "internalType": "string",
-                "name": "mimeType",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "size",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "contributionReward",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "verificationReward",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "totalRewardPool",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "category",
-                "type": "string"
-              }
-            ],
-            "internalType": "struct DataMarketplace.UploadParams",
-            "name": "params",
-            "type": "tuple"
-          }
-        ],
-        "name": "uploadDataset",
-        "outputs": [],
-        "stateMutability": "nonpayable",
         "type": "function"
       },
       {
@@ -1159,21 +1169,16 @@ class Web3Service {
         "type": "function"
       },
       {
-        "inputs": [
+        "inputs": [],
+        "name": "VOTE_DURATION",
+        "outputs": [
           {
             "internalType": "uint256",
-            "name": "proposalId",
+            "name": "",
             "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "vote",
-            "type": "bool"
           }
         ],
-        "name": "voteOnContribution",
-        "outputs": [],
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function"
       },
       {
@@ -1279,6 +1284,9 @@ class Web3Service {
     const address = connected ? this.account : null;
     const earned = connected ? await this.getWithdrawableBalance().catch(() => 0) : 0;
     const balance = connected ? await this.contract.methods.dataTokenBalance(this.account) : 0;
+    console.log("balance", balance);
+    const varificationsDone = connected ? await this.contract.methods.totalVerificattions() : 0;
+    const activeContributors = await this.contract.methods.getContributorCount();
     return {
       id: address || 'guest',
       email: address ? `${address.toLowerCase()}@wallet` : 'guest@wallet',
@@ -1286,8 +1294,8 @@ class Web3Service {
       role: 'both',
       tokens_balance: Number(balance) || 0,
       reputation_score: 0,
-      contributions_count: 0,
-      verifications_count: 0,
+      contributions_count: activeContributors,
+      verifications_count: varificationsDone,
       total_earned: Number(earned) || 0,
       specializations: []
     };
@@ -1455,10 +1463,10 @@ class Web3Service {
       await this.init();
     }
     try {
-      if (this.contract?.methods?.datasets) {
+      if (this.contract?.methods?.getAllDatasets) {
         const items = await this.contract.methods.getAllDatasets().call();
         console.log("items from datasets", items)
-        return ([items] || []).map((d, idx) => ({
+        return (items || []).map((d, idx) => ({
           id: Number(d.id ?? idx),
           owner: d.owner || this.account || '0x0',
           currentURI: d.currentURI || d.tokenURI || '',
@@ -1471,7 +1479,8 @@ class Web3Service {
           contribution_reward: Number(d.contributionReward || 0),
           verification_reward: Number(d.verificationReward || 0),
           download_price: Number(d.price ? this.web3.utils.fromWei(String(d.price), 'ether') : 0),
-          file_url: d.fileUrl || d.currentURI || ''
+          file_url: d.fileUrl || d.currentURI || '',
+          size: Number(d.size)
         }));
       }
     } catch (e) {
@@ -1492,6 +1501,51 @@ class Web3Service {
       console.warn('getAllDatasets view failed, returning empty list');
       return;
     }
+  }
+
+  async getActiveContributors() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const contributors = await this.contract.methods.getContributorCount().call();
+      console.log("contributors", contributors);
+      return contributors;
+    } catch (e) {
+      console.warn('Active contribuotrs failed, returning empty list');
+      return;
+    }
+    
+  }
+
+  async totalVerificattions() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const verifications = await this.contract.methods.totalVerificattions().call();
+      console.log("verifications", verifications);
+      return verifications;
+    } catch (e) {
+      console.warn('Active contribuotrs failed, returning empty list');
+      return;
+    }
+    
+  }
+
+  async dataTokenBalance() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const balance = await this.contract.methods.dataTokenBalance(this.account).call();
+      console.log("balance", contributors);
+      return balance;
+    } catch (e) {
+      console.warn('Balance failed, returning empty list');
+      return;
+    }
+    
   }
 }
 

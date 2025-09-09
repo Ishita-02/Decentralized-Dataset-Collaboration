@@ -23,6 +23,7 @@ export default function LeaderboardCard({ isLoading }) {
     try {
       // With no DB, synthesize a minimal list from available wallet only
       const me = await Web3Service.getCurrentUser();
+      console.log("leaderboard", me)
       setTopUsers([me]);
     } catch (error) {
       console.error("Error loading leaderboard:", error);

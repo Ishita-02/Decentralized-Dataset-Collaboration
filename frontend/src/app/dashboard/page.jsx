@@ -51,12 +51,12 @@ export default function Dashboard() {
 
       // Load stats
       const datasets = await Web3Service.getAllDatasets();
-      const contributions = [];
+    //   const activeContributors = await Web3Service.getActiveContributors();
       const verifications = [];
 
       setStats({
         datasets: datasets.length,
-        contributions: contributions.length,
+        contributions: currentUser.contributions_count,
         verifications: verifications.length,
         totalEarned: currentUser.total_earned || 0
       });

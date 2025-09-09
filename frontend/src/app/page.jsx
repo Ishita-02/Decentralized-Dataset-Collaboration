@@ -47,16 +47,19 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       const currentUser = await Web3Service.getCurrentUser();
+      console.log("dashboard", currentUser)
       setUser(currentUser);
 
       // Load stats
       const datasets = await Web3Service.getAllDatasets();
+      // const activeContributors = await Web3Service.getActiveContributors();
+      // console.log("contributors", activeContributors)
       const contributions = [];
       const verifications = [];
 
       setStats({
         datasets: datasets.length,
-        contributions: contributions.length,
+        contributions: currentUser.contributions_count,
         verifications: verifications.length,
         totalEarned: currentUser.total_earned || 0
       });

@@ -91,7 +91,7 @@ export default function DatasetCard({ dataset }) {
           </div>
           <div className="flex items-center gap-1 text-white/60">
             <FileText className="w-3 h-3" />
-            {dataset.size_mb ? `${dataset.size_mb}MB` : 'N/A'}
+            {dataset.size ? `${dataset.size} MB` : 'N/A'}
           </div>
         </div>
 

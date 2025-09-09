@@ -65,6 +65,7 @@ contract DataMarketplace {
         uint256 contributionReward;
         uint256 verificationReward;
         uint256 rewardPool;
+        string category;
     }
 
     struct Verifier {
@@ -388,7 +389,8 @@ contract DataMarketplace {
                 createdAt: d.createdAt,
                 contributionReward: d.contributionReward,
                 verificationReward: d.verificationReward,
-                rewardPool: d.rewardPool
+                rewardPool: d.rewardPool,
+                category: d.category
             });
         }
 

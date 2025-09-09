@@ -28,15 +28,16 @@ export default function BrowsePage() {
     try {
       // This now calls your Web3Service to read from the blockchain
       const contractDatasets = await Web3Service.getAllDatasets();
+      console.log("contract datasets", contractDatasets);
       // We need to fetch metadata for each dataset from IPFS/API
       // For now, we'll just display what we have from the contract
-      const formattedDatasets = contractDatasets.map(d => ({
-          ...d,
-          title: `Dataset #${d.id}`, // Placeholder title
-          description: `IPFS URI: ${d.currentURI}`, // Placeholder description
-      }));
-      setDatasets(formattedDatasets);
-      setFilteredDatasets(formattedDatasets);
+      // const formattedDatasets = contractDatasets.map(d => ({
+      //     ...d,
+      //     title: `Dataset #${d.id}`, // Placeholder title
+      //     description: `IPFS URI: ${d.currentURI}`, // Placeholder description
+      // }));
+      setDatasets(contractDatasets);
+      setFilteredDatasets(contractDatasets);
     } catch (error) {
       console.error("Error loading datasets:", error);
     }
