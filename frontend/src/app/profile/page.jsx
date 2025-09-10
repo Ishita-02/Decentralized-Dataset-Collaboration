@@ -32,13 +32,14 @@ export default function Profile() {
 
   const loadProfileData = async () => {
     try {
+      await Web3Service.init();
       const currentUser = await Web3Service.getCurrentUser();
       setUser(currentUser);
 
       const [datasets, contributions, verifications] = await Promise.all([
         Web3Service.getAllDatasets(),
-        Promise.resolve([]),
-        Promise.resolve([])
+        Web3Service.userContributions(),
+        Web3Service.getReviewedProposals()
       ]);
 
       setUserDatasets(datasets);
@@ -100,7 +101,7 @@ export default function Profile() {
               <div className="text-right">
                 <div className="flex items-center gap-2 text-2xl font-bold text-yellow-400 mb-2">
                   <Coins className="w-6 h-6" />
-                  {user?.tokens_balance || 0} DATA
+                  {user?.tokens_balance / 1e18 || 0} DATA
                 </div>
                 <p className="text-white/60 text-sm">Available Balance</p>
               </div>
@@ -210,9 +211,9 @@ export default function Profile() {
                           <div>
                             <h3 className="font-medium text-white mb-1">{contribution.title}</h3>
                             <p className="text-white/60 text-sm mb-2">{contribution.description}</p>
-                            <Badge variant="outline" className="text-xs border-white/20 text-white/70">
+                            {/* <Badge variant="outline" className="text-xs border-white/20 text-white/70">
                               {contribution.contribution_type.replace('_', ' ')}
-                            </Badge>
+                            </Badge> */}
                           </div>
                           <div className="text-right">
                             <Badge className={`mb-2 ${

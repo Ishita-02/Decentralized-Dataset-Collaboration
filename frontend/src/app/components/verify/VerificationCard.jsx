@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import Web3Service from "../services/Web3Service";
 import { 
   CheckCircle,
   XCircle,
@@ -14,14 +15,24 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
-export default function VerificationCard({ contribution, onVote }) {
+const ContributionTypeText = [
+  "data_cleaning",
+  "data_addition",
+  "annotation",
+  "validation",
+  "documentation",
+];
+
+export default function VerificationCard({  contribution, onVote }) {
   const [feedback, setFeedback] = useState("");
   const [voting, setVoting] = useState(false);
 
   const handleVote = async (approve) => {
     setVoting(true);
     try {
-      await onVote(contribution.id, contribution.proposal_id, approve);
+      console.log("contribution vote", contribution.proposalId, approve)
+      await Web3Service.voteOnContribution(contribution.proposalId, approve);
+      // await onVote(contribution.id, contribution.proposal_id, approve);
     } catch (error) {
       console.error("Error voting:", error);
     }
@@ -43,23 +54,23 @@ export default function VerificationCard({ contribution, onVote }) {
               </div>
               <div className="flex items-center gap-1">
                 <FileText className="w-4 h-4" />
-                <span className="capitalize">{contribution.contribution_type?.replace('_', ' ')}</span>
+                <span className="capitalize">{ContributionTypeText[contribution.contribType]?.replace('_', ' ')}</span>
               </div>
-              <div className="flex items-center gap-1">
+              {/* <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
                 <span>{format(new Date(contribution.created_date), 'MMM d, yyyy')}</span>
-              </div>
+              </div> */}
             </div>
           </div>
           
-          {contribution.file_url && (
+          {contribution.proposedURI && (
             <Button
               variant="ghost"
               size="sm"
               asChild
               className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
             >
-              <a href={contribution.file_url} target="_blank" rel="noopener noreferrer">
+              <a href={contribution.proposedURI} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 View File
               </a>

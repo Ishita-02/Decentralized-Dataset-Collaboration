@@ -23,7 +23,9 @@ export default function Verify() {
 
   // State for data fetched from the contract
   const [pendingContributions, setPendingContributions] = useState([]);
+  const [pendingReviews, setPendingReviews] = useState([]);
   const [myVerifications, setMyVerifications] = useState([]); // You'll need a way to fetch this
+  const [reviewCompleted, setReviewCompleted] = useState([]); 
   const [loading, setLoading] = useState(true);
   
   // State for UI control
@@ -38,11 +40,16 @@ export default function Verify() {
       if (isVerifier) {
         console.log("verifier", isVerifier)
         // Fetch data relevant only to verifiers
-        // const proposals = await Web3Service.getPendingProposals();
-        // setPendingContributions(proposals);
+        const pendingReviews = await Web3Service.getPendingReviews();
+        console.log("proposal verify page", pendingReviews)
+        setPendingReviews(pendingReviews);
         // TODO: You would also fetch the user's past verifications here
-        // const myReviews = await Web3Service.getMyVerifications(account);
-        // setMyVerifications(myReviews);
+        const reviewedProposals = await Web3Service.getReviewedProposals();
+        console.log("reviewed proposal", reviewedProposals)
+        setMyVerifications(reviewedProposals);
+
+        const reviewsCompleted = await Web3Service.getReviewedProposals();
+        setReviewCompleted(reviewsCompleted);
       }
       setLoading(false);
     };
@@ -65,10 +72,10 @@ export default function Verify() {
 
   const handleVote = async (contributionId, proposalId, vote) => {
     try {
-      await Web3Service.voteOnContribution(proposalId, vote);
       // Refresh pending contributions after voting
       const proposals = await Web3Service.getPendingProposals();
       setPendingContributions(proposals);
+
     } catch (error) {
       console.error("Error submitting vote:", error);
     }
@@ -183,7 +190,7 @@ export default function Verify() {
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardContent className="p-6 text-center">
                 <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-white">{stats?.completed}</div>
+                <div className="text-2xl font-bold text-white">{reviewCompleted.length}</div>
                 <p className="text-white/60 text-sm">Reviews Completed</p>
               </CardContent>
             </Card>
@@ -211,7 +218,7 @@ export default function Verify() {
           <Tabs defaultValue="pending-reviews">
             <TabsList className="bg-white/10">
               <TabsTrigger value="pending-reviews" className="data-[state=active]:bg-white/20">
-                Pending Reviews ({pendingContributions.length})
+                Pending Reviews ({pendingReviews.length})
               </TabsTrigger>
               <TabsTrigger value="my-verifications" className="data-[state=active]:bg-white/20">
                 My Reviews ({myVerifications.length})
@@ -244,11 +251,12 @@ export default function Verify() {
               ) : (
                 <div className="space-y-4">
                   {pendingContributions.map((contribution) => (
+                    <div key={contribution.proposalId}> {/* Key is on the outside element */}
                     <VerificationCard 
-                      key={contribution.id} 
                       contribution={contribution}
                       onVote={handleVote}
                     />
+                  </div>
                   ))}
                 </div>
               )}

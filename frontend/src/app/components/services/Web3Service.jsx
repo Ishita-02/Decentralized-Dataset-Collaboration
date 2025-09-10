@@ -1,1345 +1,24 @@
 // Web3 Service for interacting with the DataMarketplace smart contract
 import Web3 from 'web3';
+import dataMarketplaceABI from '@/app/abis/DataMarketplace';
+import dataTokenABI from '@/app/abis/DataToken';
 
 class Web3Service {
   constructor() {
 
     this.contract = null;
     
-    this.account = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+    this.account = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
     this.tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    this.contractABI = dataMarketplaceABI;
+    this.tokenContractABI = dataTokenABI;
     
     // Replace with your deployed contract address
     this.contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // UPDATE THIS
-    
-    this.tokenContractABI = [
-      {
-        "inputs": [],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "spender",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "allowance",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "needed",
-            "type": "uint256"
-          }
-        ],
-        "name": "ERC20InsufficientAllowance",
-        "type": "error"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "sender",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "balance",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "needed",
-            "type": "uint256"
-          }
-        ],
-        "name": "ERC20InsufficientBalance",
-        "type": "error"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "approver",
-            "type": "address"
-          }
-        ],
-        "name": "ERC20InvalidApprover",
-        "type": "error"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "receiver",
-            "type": "address"
-          }
-        ],
-        "name": "ERC20InvalidReceiver",
-        "type": "error"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "sender",
-            "type": "address"
-          }
-        ],
-        "name": "ERC20InvalidSender",
-        "type": "error"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "spender",
-            "type": "address"
-          }
-        ],
-        "name": "ERC20InvalidSpender",
-        "type": "error"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          }
-        ],
-        "name": "OwnableInvalidOwner",
-        "type": "error"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          }
-        ],
-        "name": "OwnableUnauthorizedAccount",
-        "type": "error"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "spender",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          }
-        ],
-        "name": "Approval",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "previousOwner",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "OwnershipTransferred",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "from",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          }
-        ],
-        "name": "Transfer",
-        "type": "event"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "spender",
-            "type": "address"
-          }
-        ],
-        "name": "allowance",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "spender",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          }
-        ],
-        "name": "approve",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "account",
-            "type": "address"
-          }
-        ],
-        "name": "balanceOf",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "decimals",
-        "outputs": [
-          {
-            "internalType": "uint8",
-            "name": "",
-            "type": "uint8"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "mint",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "name",
-        "outputs": [
-          {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "owner",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "renounceOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "symbol",
-        "outputs": [
-          {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "totalSupply",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          }
-        ],
-        "name": "transfer",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "from",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "to",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "value",
-            "type": "uint256"
-          }
-        ],
-        "name": "transferFrom",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "transferOwnership",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ]
-
-    // Contract ABI (simplified - add full ABI from your compiled contract)
-    this.contractABI = [
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_tokenAddress",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "constructor"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "proposalId",
-            "type": "uint256"
-          },
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "datasetId",
-            "type": "uint256"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "proposer",
-            "type": "address"
-          }
-        ],
-        "name": "ContributionProposed",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "proposalId",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "bool",
-            "name": "approved",
-            "type": "bool"
-          }
-        ],
-        "name": "ContributionResolved",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "proposalId",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "bool",
-            "name": "approved",
-            "type": "bool"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "rewardsDistributed",
-            "type": "uint256"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "totalSlashed",
-            "type": "uint256"
-          }
-        ],
-        "name": "ContributionResolved",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "datasetId",
-            "type": "uint256"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "creator",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "string",
-            "name": "title",
-            "type": "string"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "totalRewardPool",
-            "type": "uint256"
-          }
-        ],
-        "name": "DatasetUploaded",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "RewardsClaimed",
-        "type": "event"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "internalType": "uint256",
-            "name": "proposalId",
-            "type": "uint256"
-          },
-          {
-            "indexed": true,
-            "internalType": "address",
-            "name": "verifier",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "internalType": "bool",
-            "name": "vote",
-            "type": "bool"
-          }
-        ],
-        "name": "VerifierVoted",
-        "type": "event"
-      },
-      {
-        "inputs": [],
-        "name": "CONTRIBUTOR_REWARD_SHARES",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "CREATOR_INITIAL_SHARES",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "MINIMUM_STAKE",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "REWARD_POOL_DISTRIBUTION_PERCENT",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "SLASH_PERCENTAGE",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "VOTE_DURATION",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "claimRewards",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "dataToken",
-        "outputs": [
-          {
-            "internalType": "contract IERC20",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_user",
-            "type": "address"
-          }
-        ],
-        "name": "dataTokenBalance",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "datasetCount",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "name": "datasets",
-        "outputs": [
-          {
-            "internalType": "address",
-            "name": "creator",
-            "type": "address"
-          },
-          {
-            "internalType": "string",
-            "name": "currentURI",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "price",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "title",
-            "type": "string"
-          },
-          {
-            "internalType": "string",
-            "name": "description",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "size",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "mimeType",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "createdAt",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "category",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "contributionReward",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "verificationReward",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "rewardPool",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "totalSharePoints",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "getAllDatasets",
-        "outputs": [
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "id",
-                "type": "uint256"
-              },
-              {
-                "internalType": "address",
-                "name": "creator",
-                "type": "address"
-              },
-              {
-                "internalType": "string",
-                "name": "currentURI",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "title",
-                "type": "string"
-              },
-              {
-                "internalType": "string",
-                "name": "description",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "size",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "mimeType",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "createdAt",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "contributionReward",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "verificationReward",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "rewardPool",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "category",
-                "type": "string"
-              }
-            ],
-            "internalType": "struct DataMarketplace.DatasetView[]",
-            "name": "",
-            "type": "tuple[]"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "getContributorCount",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "_id",
-            "type": "uint256"
-          }
-        ],
-        "name": "getDatasetById",
-        "outputs": [
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "id",
-                "type": "uint256"
-              },
-              {
-                "internalType": "address",
-                "name": "creator",
-                "type": "address"
-              },
-              {
-                "internalType": "string",
-                "name": "currentURI",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "title",
-                "type": "string"
-              },
-              {
-                "internalType": "string",
-                "name": "description",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "size",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "mimeType",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "createdAt",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "contributionReward",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "verificationReward",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "rewardPool",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "category",
-                "type": "string"
-              }
-            ],
-            "internalType": "struct DataMarketplace.DatasetView",
-            "name": "",
-            "type": "tuple"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "_id",
-            "type": "uint256"
-          }
-        ],
-        "name": "getUserDatasetCurrentURI",
-        "outputs": [
-          {
-            "internalType": "string",
-            "name": "",
-            "type": "string"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "proposalCount",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "name": "proposals",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "datasetId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address",
-            "name": "proposer",
-            "type": "address"
-          },
-          {
-            "internalType": "string",
-            "name": "proposedURI",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "voteDeadline",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "yesVotes",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "noVotes",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "resolved",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "datasetId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "proposedURI",
-            "type": "string"
-          }
-        ],
-        "name": "proposeContribution",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "datasetId",
-            "type": "uint256"
-          }
-        ],
-        "name": "purchaseDataset",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "proposalId",
-            "type": "uint256"
-          }
-        ],
-        "name": "resolveContribution",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "stakeToVerify",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "totalVerificattions",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [],
-        "name": "unstake",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "price",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "tokenURI",
-                "type": "string"
-              },
-              {
-                "internalType": "string",
-                "name": "title",
-                "type": "string"
-              },
-              {
-                "internalType": "string",
-                "name": "description",
-                "type": "string"
-              },
-              {
-                "internalType": "string",
-                "name": "mimeType",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "size",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "contributionReward",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "verificationReward",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "totalRewardPool",
-                "type": "uint256"
-              },
-              {
-                "internalType": "string",
-                "name": "category",
-                "type": "string"
-              }
-            ],
-            "internalType": "struct DataMarketplace.UploadParams",
-            "name": "params",
-            "type": "tuple"
-          }
-        ],
-        "name": "uploadDataset",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_user",
-            "type": "address"
-          }
-        ],
-        "name": "userContributions",
-        "outputs": [
-          {
-            "components": [
-              {
-                "internalType": "uint256",
-                "name": "proposalId",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "datasetId",
-                "type": "uint256"
-              },
-              {
-                "internalType": "address",
-                "name": "proposer",
-                "type": "address"
-              },
-              {
-                "internalType": "string",
-                "name": "proposedURI",
-                "type": "string"
-              },
-              {
-                "internalType": "uint256",
-                "name": "voteDeadline",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "yesVotes",
-                "type": "uint256"
-              },
-              {
-                "internalType": "uint256",
-                "name": "noVotes",
-                "type": "uint256"
-              },
-              {
-                "internalType": "bool",
-                "name": "resolved",
-                "type": "bool"
-              },
-              {
-                "internalType": "address[]",
-                "name": "voters",
-                "type": "address[]"
-              }
-            ],
-            "internalType": "struct DataMarketplace.ProposalData[]",
-            "name": "",
-            "type": "tuple[]"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "_user",
-            "type": "address"
-          }
-        ],
-        "name": "userDataset",
-        "outputs": [
-          {
-            "internalType": "uint256[]",
-            "name": "",
-            "type": "uint256[]"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "name": "verifiers",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "isVerifier",
-            "type": "bool"
-          },
-          {
-            "internalType": "uint256",
-            "name": "stakedAmount",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "uint256",
-            "name": "proposalId",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bool",
-            "name": "vote",
-            "type": "bool"
-          }
-        ],
-        "name": "voteOnContribution",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "",
-            "type": "address"
-          }
-        ],
-        "name": "withdrawableBalance",
-        "outputs": [
-          {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-      }
-    ]
 
   }
 
   
-
   async init() {
     if (typeof window.ethereum !== 'undefined') {
       // Modern dapp browsers
@@ -1405,7 +84,7 @@ class Web3Service {
       // console.log(this.tokenContract, this.contractAddress)
       // CORRECT: Get the current allowance using await, .call(), and the correct arguments.
       const currentAllowance = await this.tokenContract.methods
-        .allowance(this.account, this.contractAddress)
+        .allowance("0x70997970C51812dc3A010C7d01b50e0d17dc79C8", this.contractAddress)
         .call();
   
       console.log("Current allowance:", currentAllowance);
@@ -1420,7 +99,7 @@ class Web3Service {
         console.log("Allowance is insufficient. Sending approve transaction...");
         const tx = await this.tokenContract.methods
           .approve(this.contractAddress, amountInWei)
-          .send({ from: this.account });
+          .send({ from: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" });
           
         console.log("Approve transaction successful:", tx.transactionHash);
         return tx.transactionHash; // Return the transaction hash.
@@ -1492,6 +171,7 @@ class Web3Service {
         from: this.account,
         gas: 200000
       });
+      console.log(tx)
       
       return tx.transactionHash;
     } catch (error) {
@@ -1527,15 +207,14 @@ class Web3Service {
     }
   }
 
-  async proposeContribution(datasetId, proposedURI) {
+  async proposeContribution(datasetId, proposedURI, title, description, contribType) {
     if (!this.contract || !this.account) {
       throw new Error("Web3 not initialized");
     }
 
     try {
-      const tx = await this.contract.methods.proposeContribution(datasetId, proposedURI).send({
-        from: this.account,
-        gas: 200000
+      const tx = await this.contract.methods.proposeContribution(datasetId, proposedURI, title, description, contribType).send({
+        from: this.account
       });
       
       return tx.transactionHash;
@@ -1552,9 +231,9 @@ class Web3Service {
 
     try {
       const tx = await this.contract.methods.voteOnContribution(proposalId, vote).send({
-        from: this.account,
-        gas: 150000
+        from: this.account
       });
+      console.log("verify txn", tx.transactionHash)
       
       return tx.transactionHash;
     } catch (error) {
@@ -1570,7 +249,7 @@ class Web3Service {
 
     try {
       const tx = await this.contract.methods.purchaseDataset(datasetId).send({
-        from: this.account
+        from: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
       });
       
       return tx.transactionHash;
@@ -1716,7 +395,7 @@ class Web3Service {
       return userContributions;
     } catch (e) {
       console.warn('No user contributions or failed to fetch, returning empty list');
-      return;
+      return [];
     }
   }
 
@@ -1733,6 +412,93 @@ class Web3Service {
       return;
     }
   }
+
+  async getPendingProposals() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.getPendingProposals(this.account).call();
+      console.log("result", result[0])
+      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
+        result[0] = [];
+      }
+      return result[0];
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return;
+    }
+  }
+
+  async getReviewedProposals() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.getReviewedProposals(this.account).call();
+      console.log("result", result[0])
+      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
+        result[0] = [];
+      }
+      return result[0];
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return;
+    }
+  }
+
+  async getPendingReviews() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.getPendingReviews(this.account).call();
+      console.log("result", result[0])
+      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
+        result[0] = [];
+      }
+      return result[0];
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return;
+    }
+  }
+
+  async getRejectedProposals() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.getRejectedProposals(this.account).call();
+      console.log("result", result[0])
+      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
+        result[0] = [];
+      }
+      return result[0];
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return;
+    }
+  }
+
+  async getApprovedProposals() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.getApprovedProposals(this.account).call();
+      console.log("result", result[0])
+      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
+        result[0] = [];
+      }
+      return result[0];
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return;
+    }
+  }
+
+
 }
 
 export default new Web3Service();

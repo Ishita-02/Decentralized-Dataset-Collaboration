@@ -32,6 +32,10 @@ export default function Contributions() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [web3Connected, setWeb3Connected] = useState(false);
+  const [pendingPorposals, setPendingProposals] = useState([]);
+  const [approvedPorposals, setApprovedProposals] = useState([]);
+  const [rejectedPorposals, setRejectedProposals] = useState([]);
+
 
   const router = useRouter();
 
@@ -48,6 +52,15 @@ export default function Contributions() {
       const currentUser = await Web3Service.getCurrentUser();
       console.log("current user", currentUser)
       setUser(currentUser);
+
+      const pendingContributions = await Web3Service.getPendingProposals();
+      setPendingProposals(pendingContributions);
+
+      const approvedContributions = await Web3Service.getApprovedProposals();
+      setApprovedProposals(approvedContributions);
+
+      const rejectedContributions = await Web3Service.getRejectedProposals();
+      setRejectedProposals(rejectedContributions);
 
       const [allDatasets, userContributions] = await Promise.all([
         await Web3Service.getAllDatasets(),
@@ -78,10 +91,25 @@ export default function Contributions() {
 
   const handleContributionSubmit = async (contributionData) => {
     try {
+      const ContributionType = {
+        data_cleaning: 0,
+        data_addition: 1,
+        annotation: 2,
+        validation: 3,
+        documentation: 4,
+      };
+
+      console.log("contribution data", contributionData);
+      const contributionTypeNumber = ContributionType[contributionData.contribution_type];
+
       // Submit to blockchain first
+      
       const txHash = await Web3Service.proposeContribution(
         selectedDataset.id,
-        contributionData.file_url
+        contributionData.tokenURI,
+        contributionData.title,
+        contributionData.description,
+        contributionTypeNumber
       );
 
       setShowForm(false);
@@ -115,7 +143,7 @@ export default function Contributions() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(createPageUrl("Dashboard"))}
+            onClick={() => router.push(createPageUrl("/"))}
             className="text-white hover:bg-white/10"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -151,7 +179,7 @@ export default function Contributions() {
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="p-6 text-center">
               <Clock className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-              <div className="text-2xl font-bold text-white">{stats.pending}</div>
+              <div className="text-2xl font-bold text-white">{pendingPorposals.length}</div>
               <p className="text-white/60 text-sm">Pending Review</p>
             </CardContent>
           </Card>
@@ -159,7 +187,7 @@ export default function Contributions() {
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="p-6 text-center">
               <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-3" />
-              <div className="text-2xl font-bold text-white">{stats.approved}</div>
+              <div className="text-2xl font-bold text-white">{approvedPorposals.length}</div>
               <p className="text-white/60 text-sm">Approved</p>
             </CardContent>
           </Card>
@@ -167,7 +195,7 @@ export default function Contributions() {
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="p-6 text-center">
               <XCircle className="w-8 h-8 text-red-400 mx-auto mb-3" />
-              <div className="text-2xl font-bold text-white">{stats.rejected}</div>
+              <div className="text-2xl font-bold text-white">{rejectedPorposals.length}</div>
               <p className="text-white/60 text-sm">Rejected</p>
             </CardContent>
           </Card>
