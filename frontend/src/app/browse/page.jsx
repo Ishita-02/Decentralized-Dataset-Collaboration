@@ -14,39 +14,46 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Web3Service from "../components/services/Web3Service"; // Your Web3 service
 import DatasetCard from "../components/browse/DatasetCard"; // Your DatasetCard component
+import { useWeb3 } from "../context/Web3Provider";
 
 export default function BrowsePage() {
   const [datasets, setDatasets] = useState([]);
   const [filteredDatasets, setFilteredDatasets] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  // Add other filters as needed
 
-  // Fetch data directly from the smart contract
+  
+  // Get the connection status from your Web3Context
+  // We use `account` to know IF we are connected, and `isLoading` to know WHEN to check.
+  const { account, isLoading } = useWeb3();
+
   const loadDatasets = async () => {
-    setLoading(true);
     try {
-      // This now calls your Web3Service to read from the blockchain
       const contractDatasets = await Web3Service.getAllDatasets();
-      console.log("contract datasets", contractDatasets);
-      // We need to fetch metadata for each dataset from IPFS/API
-      // For now, we'll just display what we have from the contract
-      // const formattedDatasets = contractDatasets.map(d => ({
-      //     ...d,
-      //     title: `Dataset #${d.id}`, // Placeholder title
-      //     description: `IPFS URI: ${d.currentURI}`, // Placeholder description
-      // }));
+      console.log("Contract datasets fetched:", contractDatasets);
       setDatasets(contractDatasets);
       setFilteredDatasets(contractDatasets);
     } catch (error) {
       console.error("Error loading datasets:", error);
     }
-    setLoading(false);
   };
 
+  // This effect now correctly depends on the provider's state
   useEffect(() => {
-    loadDatasets();
-  }, []);
+    // The condition:
+    // 1. `!isLoading`: The provider has finished its initial connection attempt.
+    // 2. `account`: The connection was successful and we have a user account.
+    if (!isLoading && account) {
+      console.log("Provider is ready. Loading datasets for account:", account);
+      loadDatasets();
+    } else if (!isLoading && !account) {
+      // Handle the case where the user is not connected
+      console.log("Provider finished loading, but no wallet connected.");
+      setIsFetching(false); // Stop the loading spinner
+      setDatasets([]); // Ensure data is cleared
+      setFilteredDatasets([]);
+    }
+  }, [account, isLoading]);
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
@@ -57,6 +64,7 @@ export default function BrowsePage() {
     );
     setFilteredDatasets(filtered);
   };
+
   
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -91,7 +99,7 @@ export default function BrowsePage() {
 
       {/* Datasets Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading ? (
+        {isLoading ? (
           <p className="text-white/70 col-span-full text-center">Loading datasets from the blockchain...</p>
         ) : filteredDatasets.length === 0 ? (
           <div className="col-span-full text-center py-12">

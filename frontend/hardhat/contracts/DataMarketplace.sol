@@ -329,7 +329,7 @@ contract DataMarketplace {
         require(d.creator != msg.sender, "Creator cant buy dataset");
         
         // Note for Frontend: The user must first approve the contract to spend d.price amount of DATA tokens.
-        require(dataToken.transferFrom("0x70997970C51812dc3A010C7d01b50e0d17dc79C8", address(this), d.price), "Payment failed");
+        require(dataToken.transferFrom(msg.sender, address(this), d.price), "Payment failed");
 
         // 80% of the price is distributed to the creator and contributors based on their shares.
         uint256 revenueShare = (d.price * 80) / 100;

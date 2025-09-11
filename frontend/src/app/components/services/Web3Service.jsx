@@ -84,7 +84,7 @@ class Web3Service {
       // console.log(this.tokenContract, this.contractAddress)
       // CORRECT: Get the current allowance using await, .call(), and the correct arguments.
       const currentAllowance = await this.tokenContract.methods
-        .allowance("0x70997970C51812dc3A010C7d01b50e0d17dc79C8", this.contractAddress)
+        .allowance(this.account, this.contractAddress)
         .call();
   
       console.log("Current allowance:", currentAllowance);
@@ -99,7 +99,7 @@ class Web3Service {
         console.log("Allowance is insufficient. Sending approve transaction...");
         const tx = await this.tokenContract.methods
           .approve(this.contractAddress, amountInWei)
-          .send({ from: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8" });
+          .send({ from: this.account });
           
         console.log("Approve transaction successful:", tx.transactionHash);
         return tx.transactionHash; // Return the transaction hash.
@@ -186,14 +186,6 @@ class Web3Service {
     }
 
     try {
-      // const txParams = {
-      //   ...params,
-      //   price: this.web3.utils.toWei(params.price.toString(), 'ether'),
-      //   contributionReward: this.web3.utils.toWei(params.contributionReward.toString(), 'ether'),
-      //   verificationReward: this.web3.utils.toWei(params.verificationReward.toString(), 'ether'),
-      //   totalRewardPool: this.web3.utils.toWei(params.totalRewardPool.toString(), 'ether'),
-      // };
-
       console.log(params)
 
       const tx = await this.contract.methods.uploadDataset(params).send({
@@ -249,7 +241,7 @@ class Web3Service {
 
     try {
       const tx = await this.contract.methods.purchaseDataset(datasetId).send({
-        from: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+        from: this.account
       });
       
       return tx.transactionHash;
@@ -404,6 +396,7 @@ class Web3Service {
       await this.init();
     }
     try {
+      console.log("id", id)
       const datasetById = await this.contract.methods.getDatasetById(id).call();
       console.log("datasetById", datasetById);
       return datasetById;
@@ -426,7 +419,7 @@ class Web3Service {
       return result[0];
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
-      return;
+      return [];
     }
   }
 
@@ -443,7 +436,7 @@ class Web3Service {
       return result[0];
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
-      return;
+      return [];
     }
   }
 
@@ -460,7 +453,7 @@ class Web3Service {
       return result[0];
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
-      return;
+      return [];
     }
   }
 
@@ -477,7 +470,7 @@ class Web3Service {
       return result[0];
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
-      return;
+      return [];
     }
   }
 
@@ -494,7 +487,7 @@ class Web3Service {
       return result[0];
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
-      return;
+      return [];
     }
   }
 

@@ -31,10 +31,12 @@ export default function DatasetDetailPage() {
       setIsLoading(true);
       setError(null);
       try {
+
+        console.log("dataset id", id)
         // ✅ STEP 1: Fetch contract details and IPFS URL in parallel
-        const [details, ipfsUrl] = await Promise.all([
+        let [details, ipfsUrl] = await Promise.all([
           Web3Service.getDatasetById(1),
-          Web3Service.getUserDatasetCurrentId(id)
+          Web3Service.getUserDatasetCurrentId(1)
         ]);
 
         // ✅ STEP 2: Set the main dataset state
@@ -61,8 +63,10 @@ export default function DatasetDetailPage() {
       setIsLoading(false);
     };
 
-    loadData();
-  }, [id]);
+    if (id && account) {
+      loadData();
+    }
+  }, [id, account]);
 
   const parseCsvData = (csvText) => {
     if (!csvText || typeof csvText !== 'string') {
@@ -86,8 +90,8 @@ export default function DatasetDetailPage() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div>
-          <h1 className="text-4xl font-bold text-white">{dataset.name}</h1>
-          <p className="text-white/60 mt-1">Uploaded on {format(new Date(dataset.createdAt), 'MMM d, yyyy')}</p>
+          <h1 className="text-4xl font-bold text-white">{dataset.title}</h1>
+          <p className="text-white/60 mt-1">Uploaded on {format(new Date(Number(dataset.createdAt) * 1000), 'MMM d, yyyy')}</p>
         </div>
       </div>
 
@@ -97,11 +101,11 @@ export default function DatasetDetailPage() {
           <Card>
             <CardHeader><CardTitle className="text-white">Dataset Details</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-2 gap-4 text-sm">
-              <div><strong className="text-white/80">Creator:</strong> <span className="text-white/60 font-mono text-xs">{`${dataset.creator.substring(0, 10)}...`}</span></div>
+              <div><strong className="text-white/80">Creator:</strong> <span className="text-white/60 font-mono text-xs">{`${dataset.creator}`}</span></div>
               <div><strong className="text-white/80">Price:</strong> <span className="text-yellow-400 font-bold">{dataset.price} DATA</span></div>
               <div><strong className="text-white/80">MIME Type:</strong> <span className="text-white/60">{dataset.mimeType}</span></div>
-              <div><strong className="text-white/80">File Size:</strong> <span className="text-white/60">{(dataset.size / 1024).toFixed(2)} KB</span></div>
-              <div><strong className="text-white/80">Storage:</strong> <a href={`${preview}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">View on IPFS</a></div>
+              <div><strong className="text-white/80">File Size:</strong> <span className="text-white/60">{(dataset.size)} KB</span></div>
+              {/* <div><strong className="text-white/80">Storage:</strong> <a href={`${preview}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">View on IPFS</a></div> */}
             </CardContent>
           </Card>
 

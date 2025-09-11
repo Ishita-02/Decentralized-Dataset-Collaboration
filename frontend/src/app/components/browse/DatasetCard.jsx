@@ -112,7 +112,7 @@ export default function DatasetCard({ dataset }) {
           <Button
             variant="outline"
             className="flex-1 w-full border-white/20 text-white hover:bg-white/10 text-sm"
-            onClick={() => router.push(`${createPageUrl("Dataset")}?id=${dataset.id}`)}
+            onClick={() => router.push(`${createPageUrl("Dataset")}/id=${dataset.id}`)}
           >
             <Eye className="w-4 h-4 mr-2" />
             View Details
