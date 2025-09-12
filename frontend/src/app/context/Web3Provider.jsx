@@ -3,10 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import Web3Service from '../components/services/Web3Service';
 
-// 1. Create the context
 const Web3Context = createContext(null);
 
-// 2. Create the Provider component
 export function Web3Provider({ children }) {
   const [account, setAccount] = useState(null);
   const [isVerifier, setIsVerifier] = useState(false);
@@ -14,55 +12,86 @@ export function Web3Provider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Function to connect the wallet
+  const disconnectWallet = useCallback(() => {
+    setAccount(null);
+    setIsVerifier(false);
+    setStakedAmount(0);
+    setError(null);
+    // ✅ 1. Set the flag in localStorage when user disconnects
+    localStorage.setItem('wallet_disconnected', 'true');
+    console.log("Wallet disconnected.");
+  }, []);
+
   const connectWallet = useCallback(async () => {
+    // ✅ 2. Remove the flag when the user intentionally connects
+    localStorage.removeItem('wallet_disconnected');
     setIsLoading(true);
     setError(null);
     try {
       const acc = await Web3Service.connectWallet();
-      setAccount(acc);
-      const verifierInfo = await Web3Service.getVerifierInfo();
-      setIsVerifier(verifierInfo.isVerifier);
-      setStakedAmount(verifierInfo.stakedAmount);
+      if (acc) {
+        setAccount(acc);
+        const verifierInfo = await Web3Service.getVerifierInfo();
+        setIsVerifier(verifierInfo.isVerifier);
+        setStakedAmount(verifierInfo.stakedAmount);
+      } else {
+        disconnectWallet();
+      }
     } catch (err) {
       console.error("Connection Error:", err);
       setError(err.message);
+      disconnectWallet();
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [disconnectWallet]);
 
-  // Check for existing connection on initial load
   useEffect(() => {
-    const checkExistingConnection = async () => {
-      if (await Web3Service.isConnected()) {
-        await connectWallet();
-      } else {
-        setIsLoading(false); // No wallet connected, stop loading
-      }
-    };
-    checkExistingConnection();
-
-    // Listen for account changes from MetaMask
     if (window.ethereum) {
-      window.ethereum.on('accountsChanged', (accounts) => {
+      const handleAccountsChanged = (accounts) => {
         if (accounts.length > 0) {
-          setAccount(accounts[0]);
-          // Re-check verifier status when account changes
-          Web3Service.getVerifierInfo().then(info => {
-            setIsVerifier(info.isVerifier);
-            setStakedAmount(info.stakedAmount);
-          });
+          connectWallet();
         } else {
-          setAccount(null);
-          setIsVerifier(false);
-          setStakedAmount(0);
+          disconnectWallet();
         }
-      });
-    }
-  }, [connectWallet]);
+      };
 
-  // The value that will be available to all children components
+      const handleChainChanged = () => {
+        window.location.reload();
+      };
+      
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      // ✅ 3. Check for the flag before trying to auto-reconnect
+      const checkExistingConnection = async () => {
+        const isDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
+        if (isDisconnected) {
+          setIsLoading(false);
+          return;
+        }
+
+        try {
+          if (await Web3Service.isConnected()) {
+            await connectWallet();
+          } else {
+            setIsLoading(false);
+          }
+        } catch (e) {
+          setIsLoading(false);
+        }
+      };
+      checkExistingConnection();
+
+      return () => {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    } else {
+      setIsLoading(false);
+    }
+  }, [connectWallet, disconnectWallet]);
+
   const value = {
     account,
     isVerifier,
@@ -70,12 +99,12 @@ export function Web3Provider({ children }) {
     isLoading,
     error,
     connectWallet,
+    disconnectWallet,
   };
 
   return <Web3Context.Provider value={value}>{children}</Web3Context.Provider>;
 }
 
-// 3. Create a custom hook for easy access to the context
 export function useWeb3() {
   const context = useContext(Web3Context);
   if (!context) {

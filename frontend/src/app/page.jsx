@@ -71,7 +71,7 @@ export default function Dashboard() {
       setStats({
         datasets: datasets.length,
         contributions: currentUser.contributions_count,
-        verifications: verifications.length,
+        verifications: currentUser.verifications_count,
         totalEarned: currentUser.total_earned || 0
       });
 

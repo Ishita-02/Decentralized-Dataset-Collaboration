@@ -42,6 +42,9 @@ export default function Profile() {
         Web3Service.getReviewedProposals()
       ]);
 
+
+      console.log("verifications", verifications)
+
       setUserDatasets(datasets);
       setUserContributions(contributions);
       setUserVerifications(verifications);
@@ -244,7 +247,7 @@ export default function Profile() {
                   </div>
                 ) : (
                   userVerifications.map((verification) => (
-                    <Card key={verification.id} className="bg-white/5 border-white/10">
+                    <Card key={verification.proposalId} className="bg-white/5 border-white/10">
                       <CardContent className="p-4">
                         <div className="flex justify-between items-start">
                           <div>
@@ -265,9 +268,9 @@ export default function Profile() {
                             <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 mb-2">
                               {verification.status}
                             </Badge>
-                            {verification.tokens_earned > 0 && (
+                            {verification.yesVotes > 0 && (
                               <div className="text-yellow-400 text-sm font-medium">
-                                +{verification.tokens_earned} DATA
+                                +{`${Number(verification.yesVotes) / 1e18}`} DATA
                               </div>
                             )}
                           </div>

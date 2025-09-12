@@ -124,18 +124,6 @@ useEffect(() => {
       console.error("Error submitting vote:", error);
     }
   };
-
-  const baseBadgeClasses = 'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold';
-
-    // Define the color styles based on the status
-    const statusClasses = voted
-      ? 'bg-green-500/10 text-green-400 border-green-500/20'
-      : 'bg-red-500/10 text-red-400 border-red-500/20';
-
-  // ✅ 3. Correctly format the staked amount from Wei to Ether for display
-  const formattedStakedAmount = stakedAmount && web3 ? web3.utils.fromWei(stakedAmount.toString(), 'ether') : 0;
-
-  // The rest of your JSX remains largely the same, but uses the corrected state.
   
   const getVerificationStats = () => {
     const completed = myVerifications.filter(v => v.status === 'completed').length;
@@ -344,7 +332,6 @@ useEffect(() => {
                               <h3 className="font-medium text-white mb-2">Verification Review</h3>
                               <p className="text-white/60 text-sm mb-2">{verification.title}</p>
                               
-                              {/* 3. Render based on the loading and status variables */}
                               {isLoadingVotes ? (
                                 <div className={`${baseBadgeClasses} animate-pulse bg-white/10`}>Checking vote...</div>
                               ) : (

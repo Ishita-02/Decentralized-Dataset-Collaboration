@@ -8,7 +8,7 @@ class Web3Service {
 
     this.contract = null;
     
-    this.account = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
+    this.account = null;
     this.tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
     this.contractABI = dataMarketplaceABI;
     this.tokenContractABI = dataTokenABI;
@@ -49,14 +49,22 @@ class Web3Service {
     if (typeof window.ethereum === 'undefined') {
       throw new Error("No Ethereum provider found. Please install MetaMask.");
     }
+    
     this.web3 = new Web3(window.ethereum);
     
-    // This line specifically triggers the MetaMask pop-up
+    // This triggers the MetaMask pop-up for the user to select an account
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    this.account = accounts[0];
+    if (accounts.length === 0) {
+      throw new Error("No accounts found. Please connect an account in MetaMask.");
+    }
+    
+    this.account = accounts[0]; // Set the account to the one the user selected
 
-    // Re-initialize the contract after connecting to ensure it uses the user's provider
-    await this.init(true);
+    // Initialize contracts with the user's provider and account
+    this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
+    this.tokenContract = new this.web3.eth.Contract(this.tokenContractABI, this.tokenAddress);
+    
+    console.log("Web3Service connected to account:", this.account);
     return this.account;
   }
 
@@ -119,7 +127,7 @@ class Web3Service {
     const earned = connected ? await this.getWithdrawableBalance().catch(() => 0) : 0;
     const balance = connected ? await this.dataTokenBalance() : 0;
     console.log("balance", balance);
-    const varificationsDone = connected ? await this.contract.methods.totalVerificattions().call() : 0;
+    const varificationsDone = connected ? await this.getReviewedProposals() : 0;
     const activeContributors = await this.contract.methods.getContributorCount().call();
     console.log("active contributors web3js", activeContributors)
     return {
@@ -130,7 +138,7 @@ class Web3Service {
       tokens_balance: Number(balance) || 0,
       reputation_score: 0,
       contributions_count: activeContributors,
-      verifications_count: varificationsDone,
+      verifications_count: varificationsDone.length,
       total_earned: Number(earned) || 0,
       specializations: []
     };
@@ -497,6 +505,19 @@ class Web3Service {
     }
     try {
       const result = await this.contract.methods.userVoteStatusByProposalId(id).call();
+      return result;
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return [];
+    }
+  }
+
+  async resolveContribution(id) {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.resolveContribution(id).call();
       return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
