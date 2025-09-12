@@ -9,9 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useWeb3 } from "../app/context/Web3Provider"; // Import the custom hook
-
-const createPageUrl = (page) => `/${page.toLowerCase().replace(/\s+/g, '-')}`;
+import { useWeb3 } from "../app/context/Web3Provider";
 
 const navigationItems = [
     { title: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -26,10 +24,8 @@ export default function AppLayout({ children }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = React.useState(false);
 
-  // Get global wallet state and connect function from the context
   const { account, connectWallet, disconnectWallet, isLoading } = useWeb3();
 
-  // This is the content that will appear inside the slide-out menu
   const NavContent = () => (
     <>
       <div className="flex items-center gap-3 p-6 border-b border-white/10">
@@ -86,18 +82,29 @@ export default function AppLayout({ children }) {
     </>
   );
 
-return (
+  return (
     <div className="relative z-10">
       <header className="fixed top-0 left-0 right-0 z-50 bg-slate-800/90 backdrop-blur-xl border-b border-white/10">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            {/* ... your mobile menu trigger ... */}
+          
+            {/* ✅ THIS IS THE MISSING CODE FOR THE MENU ICON */}
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/10">
+                  <Menu className="w-6 h-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 bg-gradient-to-b from-slate-800 to-slate-900 border-white/10 w-80">
+                <div className="h-full flex flex-col">
+                  <NavContent />
+                </div>
+              </SheetContent>
+            </Sheet>
+            
             <h1 className="font-bold text-white">DataNexus</h1>
           </div>
           
-          {/* --- UPDATED ---
-              2. This section now includes the Disconnect button logic 
-          */}
           <div className="flex items-center">
             {account ? (
               <div className="flex items-center gap-3">
@@ -106,7 +113,7 @@ return (
                 </div>
                 <Button 
                   onClick={disconnectWallet}
-                  variant="secondary" // Use a secondary style for the disconnect button
+                  variant="secondary"
                   className="bg-white/10 hover:bg-white/20 text-white"
                 >
                   Disconnect
