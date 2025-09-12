@@ -27,6 +27,9 @@ export default function Verify() {
   const [myVerifications, setMyVerifications] = useState([]); // You'll need a way to fetch this
   const [reviewCompleted, setReviewCompleted] = useState([]); 
   const [loading, setLoading] = useState(true);
+  const [voted, setVoted] = useState(false);
+  const [voteStatuses, setVoteStatuses] = useState({}); // Will store vote status for each proposal, e.g., { 1: true, 2: false }
+  const [isLoadingVotes, setIsLoadingVotes] = useState(true);
   
   // State for UI control
   const [showStakeDialog, setShowStakeDialog] = useState(false);
@@ -50,6 +53,11 @@ export default function Verify() {
 
         const reviewsCompleted = await Web3Service.getReviewedProposals();
         setReviewCompleted(reviewsCompleted);
+
+        const userVoteStatusByProposalId = await Web3Service.userVoteStatusByProposalId(1);
+        console.log(userVoteStatusByProposalId)
+        setVoted(userVoteStatusByProposalId);
+
       }
       setLoading(false);
     };
@@ -61,7 +69,43 @@ export default function Verify() {
       // If no account, we aren't loading anything.
       setLoading(false); 
     }
-  }, [account, isVerifier]); // This hook re-runs whenever account or isVerifier status changes
+  }, [account, isVerifier]); 
+  
+  // Add this new useEffect in your Verify.jsx file
+
+useEffect(() => {
+  // Don't run if the main list is empty
+  if (myVerifications.length === 0) {
+    setIsLoadingVotes(false);
+    return;
+  }
+
+  const fetchAllVoteStatuses = async () => {
+    setIsLoadingVotes(true);
+    try {
+      // Create a list of promises, one for each verification
+      const promises = myVerifications.map(verification =>
+        Web3Service.userVoteStatusByProposalId(verification.proposalId)
+      );
+      
+      // Wait for all of them to finish
+      const results = await Promise.all(promises);
+      
+      // Create a new status map object like { proposalId: true, ... }
+      const statuses = {};
+      myVerifications.forEach((verification, index) => {
+        statuses[verification.proposalId] = results[index];
+      });
+      
+      setVoteStatuses(statuses);
+    } catch (error) {
+      console.error("Failed to fetch one or more vote statuses:", error);
+    }
+    setIsLoadingVotes(false);
+  };
+
+  fetchAllVoteStatuses();
+}, [myVerifications]); // This hook runs whenever the myVerifications list changes// This hook re-runs whenever account or isVerifier status changes
 
   const handleStakeSuccess = () => {
     // The useWeb3 hook should automatically update isVerifier.
@@ -80,6 +124,13 @@ export default function Verify() {
       console.error("Error submitting vote:", error);
     }
   };
+
+  const baseBadgeClasses = 'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold';
+
+    // Define the color styles based on the status
+    const statusClasses = voted
+      ? 'bg-green-500/10 text-green-400 border-green-500/20'
+      : 'bg-red-500/10 text-red-400 border-red-500/20';
 
   // ✅ 3. Correctly format the staked amount from Wei to Ether for display
   const formattedStakedAmount = stakedAmount && web3 ? web3.utils.fromWei(stakedAmount.toString(), 'ether') : 0;
@@ -182,7 +233,7 @@ export default function Verify() {
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardContent className="p-6 text-center">
                 <Clock className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-white">{pendingContributions.length}</div>
+                <div className="text-2xl font-bold text-white">{pendingReviews.length}</div>
                 <p className="text-white/60 text-sm">Pending Reviews</p>
               </CardContent>
             </Card>
@@ -240,7 +291,7 @@ export default function Verify() {
                     </Card>
                   ))}
                 </div>
-              ) : pendingContributions.length === 0 ? (
+              ) : pendingReviews.length === 0 ? (
                 <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                   <CardContent className="text-center py-12">
                     <FileText className="w-16 h-16 text-white/20 mx-auto mb-4" />
@@ -250,7 +301,7 @@ export default function Verify() {
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {pendingContributions.map((contribution) => (
+                  {pendingReviews.map((contribution) => (
                     <div key={contribution.proposalId}> {/* Key is on the outside element */}
                     <VerificationCard 
                       contribution={contribution}
@@ -273,32 +324,48 @@ export default function Verify() {
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {myVerifications.map((verification) => (
-                    <Card key={verification.id} className="bg-white/5 backdrop-blur-xl border-white/10">
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium text-white mb-2">Verification Review</h3>
-                            <p className="text-white/60 text-sm mb-2">{verification.feedback}</p>
-                            <Badge className={`${
-                              verification.decision === 'approve' 
-                                ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                                : 'bg-red-500/10 text-red-400 border-red-500/20'
-                            }`}>
-                              {verification.decision === 'approve' ? 'Approved' : 'Rejected'}
-                            </Badge>
+                  {myVerifications.map((verification, index) => {
+                    // --- THIS IS THE UPDATED LOGIC ---
+                    
+                    // 1. Look up the vote status for THIS specific verification
+                    const hasVoted = voteStatuses[verification.proposalId];
+                    
+                    // 2. Define styles and classes based on the lookup result
+                    const baseBadgeClasses = 'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold';
+                    const statusClasses = hasVoted
+                      ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                      : 'bg-red-500/10 text-red-400 border-red-500/20';
+
+                    return (
+                      <Card key={`${verification.proposalId}-${index}`} className="bg-white/5 backdrop-blur-xl border-white/10">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-medium text-white mb-2">Verification Review</h3>
+                              <p className="text-white/60 text-sm mb-2">{verification.title}</p>
+                              
+                              {/* 3. Render based on the loading and status variables */}
+                              {isLoadingVotes ? (
+                                <div className={`${baseBadgeClasses} animate-pulse bg-white/10`}>Checking vote...</div>
+                              ) : (
+                                <div className={`${baseBadgeClasses} ${statusClasses}`}>
+                                  {hasVoted ? 'Approved' : 'Rejected'}
+                                </div>
+                              )}
+
+                            </div>
+                            <div className="text-right">
+                              {Number(verification.yesVotes) > 0 && (
+                                <div className="text-yellow-400 font-medium">
+                                  +{`${Number(verification.yesVotes) / 1e18}`} DATA
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="text-right">
-                            {verification.tokens_earned > 0 && (
-                              <div className="text-yellow-400 font-medium">
-                                +{verification.tokens_earned} DATA
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>

@@ -491,6 +491,19 @@ class Web3Service {
     }
   }
 
+  async userVoteStatusByProposalId(id) {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.userVoteStatusByProposalId(id).call();
+      return result;
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return [];
+    }
+  }
+
 
 }
 
