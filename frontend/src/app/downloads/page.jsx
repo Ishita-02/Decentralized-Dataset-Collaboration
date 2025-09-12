@@ -220,7 +220,7 @@ export default function Downloads() {
                       <div className="flex items-center gap-2">
                         <Coins className="w-4 h-4 text-yellow-400" />
                         <span className="text-white font-medium">
-                          {dataset.download_price === 0 ? 'Free' : `${dataset.download_price * 1e18} DATA`}
+                          {dataset.download_price === 0 ? 'Free' : `${dataset.download_price} DATA`}
                         </span>
                       </div>
                       {dataset.download_price > 0 && (

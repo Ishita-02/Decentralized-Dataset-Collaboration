@@ -102,7 +102,7 @@ export default function UploadPage() {
 
       
       const params = {
-        price: Number(formData.download_price || 0),
+        price: Number(formData.download_price * 1e18 || 0),
         tokenURI: tokenURI,
         title: formData.title,
         description: formData.description,

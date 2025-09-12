@@ -71,7 +71,7 @@ export default function RewardSettings({ formData, onUpdate }) {
               type="number"
               min="0"
               value={formData.download_price}
-              onChange={(e) => onUpdate('download_price', parseInt(e.target.value))}
+              onChange={(e) => onUpdate('download_price', parseInt(e.target.value) )}
               className="bg-white/5 border-white/10 text-white"
             />
             <p className="text-xs text-white/50">0 = Free download</p>

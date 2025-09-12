@@ -46,13 +46,6 @@ export default function StatsGrid({ stats, userTokens, userReputation, isLoading
       icon: TrendingUp,
       gradient: "from-indigo-500 to-purple-500",
       bgGradient: "from-indigo-500/10 to-purple-500/10"
-    },
-    {
-      title: "Reputation",
-      value: userReputation,
-      icon: Award,
-      gradient: "from-pink-500 to-rose-500",
-      bgGradient: "from-pink-500/10 to-rose-500/10"
     }
   ];
 

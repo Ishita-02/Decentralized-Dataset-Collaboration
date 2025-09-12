@@ -83,10 +83,10 @@ export default function Profile() {
               </div>
               
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-white mb-2">
+                <h1 className="text-xl font-bold text-white mb-2">
                   {user?.full_name || user?.email.split('@')[0]}
                 </h1>
-                <p className="text-white/60 mb-4">{user?.email}</p>
+                {/* <p className="text-white/60 mb-4">{user?.email}</p> */}
                 
                 <div className="flex flex-wrap gap-3">
                   <Badge className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-300 border-blue-500/20">
@@ -138,13 +138,13 @@ export default function Profile() {
             </CardContent>
           </Card>
           
-          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+          {/* <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="p-6 text-center">
               <Award className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
               <div className="text-2xl font-bold text-white">{user?.reputation_score || 0}</div>
               <p className="text-white/60 text-sm">Reputation Score</p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Activity Tabs */}

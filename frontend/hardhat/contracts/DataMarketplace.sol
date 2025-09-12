@@ -11,19 +11,18 @@ contract DataMarketplace {
     EnumerableSet.AddressSet private _activeContributors;
     uint256 verificationsDone;
 
-    // Reference to your DATA Token contract
     IERC20 public dataToken;
 
     enum ContributionType {
-        data_cleaning, // Fixing an error in existing data
-        data_addition,   // Adding new rows/data
+        data_cleaning, 
+        data_addition,  
         annotation,
         validation, 
-        documentation    // Proposing to remove data
+        documentation 
     }
 
     enum ProposalStatus {
-        Pending, // Fixing an error in existing data
+        Pending, 
         Approved,
         Rejected
     }
@@ -40,8 +39,6 @@ contract DataMarketplace {
         uint256 totalRewardPool;
         string category;
     }
-
-    // --- Structs ---
     struct Dataset {
         address creator;
         string currentURI;
@@ -52,20 +49,14 @@ contract DataMarketplace {
         string mimeType;
         uint256 createdAt;
         string category;
-
-        // Per-dataset incentive settings, funded by the creator
         uint256 contributionReward;
         uint256 verificationReward;
         uint256 rewardPool;
-
-        // Participant tracking for purchase revenue sharing
         uint256 totalSharePoints;
         mapping(address => uint256) sharePoints;
         address[] participants;
         mapping(address => bool) isParticipant;
     }
-
-    // Add this struct definition near your others in the contract
     struct DatasetView {
         uint256 id;
         address creator;
@@ -89,18 +80,16 @@ contract DataMarketplace {
         bool consensusMatched;
         uint256 reward;
     }
-
-    // Contributions are now proposals that must be voted on
     struct ContributionProposal {
         uint256 datasetId;
         address proposer;
         string proposedURI;
         uint256 voteDeadline;
-        uint256 yesVotes; // Votes weighted by stake
+        uint256 yesVotes; 
         uint256 noVotes;
         bool resolved;
         mapping(address => bool) hasVoted;
-        address[] voters; // UPDATED: To track voters for this proposal
+        address[] voters; 
         mapping(address => bool) voteChoice; 
         string title;
         string description;
@@ -109,7 +98,7 @@ contract DataMarketplace {
     }
 
     struct ProposalData {
-        uint256 proposalId; // Good practice to return the ID
+        uint256 proposalId; 
         uint256 datasetId;
         address proposer;
         string proposedURI;
@@ -124,45 +113,39 @@ contract DataMarketplace {
         ProposalStatus status;
     }
 
-    // --- State Variables ---
     mapping(uint256 => Dataset) public datasets;
     mapping(address => Verifier) public verifiers;
     mapping(uint256 => ContributionProposal) public proposals;
     mapping(address => mapping(uint256 => bool)) public userReviewDetails;
     
-    // Keeps track of earned rewards for users to claim
     mapping(address => uint256) public withdrawableBalance;
 
     uint256 public datasetCount;
     uint256 public proposalCount;
-    // uint256 public verifierRewardPool;
 
     mapping(address => uint256) public userVerificationCount;
     mapping(address => uint256) public userSuccessfulContributionCount;
 
-    // --- Constants ---
-    uint256 public constant MINIMUM_STAKE = 1000 * 10**18; // 1000 DATA tokens
-    uint256 public constant VOTE_DURATION = 1 days;
-    uint256 public constant CONTRIBUTOR_REWARD_SHARES = 200; // Share points for a successful contribution
-    uint256 public constant CREATOR_INITIAL_SHARES = 1000; // Initial share points for the creator
-    uint256 public constant REWARD_POOL_DISTRIBUTION_PERCENT = 10; // 10% of the pool is used per vote
+    uint256 public constant MINIMUM_STAKE = 1000 * 10**18; 
+    uint256 public constant VOTE_DURATION = 2 minutes;
+    uint256 public constant CONTRIBUTOR_REWARD_SHARES = 200; 
+    uint256 public constant CREATOR_INITIAL_SHARES = 1000; 
+    uint256 public constant REWARD_POOL_DISTRIBUTION_PERCENT = 10; 
     uint256 public constant SLASH_PERCENTAGE = 5; 
 
 
-    // --- Events ---
     event DatasetUploaded(uint256 indexed datasetId, address indexed creator, string title, uint256 totalRewardPool);
     event ContributionProposed(uint256 indexed proposalId, uint256 indexed datasetId, address indexed proposer);
     event VerifierVoted(uint256 indexed proposalId, address indexed verifier, bool vote);
     event RewardsClaimed(address indexed user, uint256 amount);
     event ContributionResolved(uint256 indexed proposalId, bool approved, uint256 rewardsDistributed, uint256 totalSlashed);
+    event DatasetPurchased(uint256 indexed datasetId, address indexed user, uint256 price);
 
 
-    // --- Constructor ---
     constructor(address _tokenAddress) {
         dataToken = IERC20(_tokenAddress);
     }
 
-    // --- Core Functions ---
 
     function stakeToVerify() external {
         require(dataToken.transferFrom(msg.sender, address(this), MINIMUM_STAKE), "Token transfer failed for stake");
@@ -186,7 +169,6 @@ contract DataMarketplace {
         datasetCount++;
         Dataset storage d = datasets[datasetCount];
 
-        // Transfer funds from the uploader to this dataset's dedicated reward pool
         require(
             dataToken.transferFrom(msg.sender, address(this), params.totalRewardPool),
             "Token transfer for reward pool failed"
@@ -202,12 +184,10 @@ contract DataMarketplace {
         d.createdAt = block.timestamp;
         d.category = params.category;
 
-        // Set the per-dataset incentive values
         d.contributionReward = params.contributionReward;
         d.verificationReward = params.verificationReward;
         d.rewardPool = params.totalRewardPool;
 
-        // Initialize revenue sharing details
         d.totalSharePoints = CREATOR_INITIAL_SHARES;
         d.sharePoints[msg.sender] = CREATOR_INITIAL_SHARES;
         d.isParticipant[msg.sender] = true;
@@ -217,7 +197,6 @@ contract DataMarketplace {
     }
 
 
-    // NEW: Contributions are proposals now
     function proposeContribution(uint256 datasetId, string calldata proposedURI, string calldata title, string calldata description, ContributionType contribType) external {
         require(datasets[datasetId].creator != address(0), "Dataset does not exist");
         proposalCount++;
@@ -237,7 +216,6 @@ contract DataMarketplace {
         emit ContributionProposed(proposalCount, datasetId, msg.sender);
     }
 
-    // NEW: Verifiers vote on specific proposals
     function voteOnContribution(uint256 proposalId, bool vote) external {
         Verifier storage verifier = verifiers[msg.sender];
         require(verifier.isVerifier, "Not a verifier");
@@ -247,8 +225,8 @@ contract DataMarketplace {
         require(!p.hasVoted[msg.sender], "Already voted");
 
         p.hasVoted[msg.sender] = true;
-        p.voters.push(msg.sender); // CRITICAL FIX
-        p.voteChoice[msg.sender] = vote; // CRITICAL FIX
+        p.voters.push(msg.sender); 
+        p.voteChoice[msg.sender] = vote; 
 
         uint256 stakeWeight = verifier.stakedAmount;
         if (vote) {
@@ -259,7 +237,7 @@ contract DataMarketplace {
 
         userReviewDetails[msg.sender][proposalId] = true;
 
-        // emit VerifierVoted(proposalId, msg.sender, vote);
+        emit VerifierVoted(proposalId, msg.sender, vote);
     }
 
     function resolveContribution(uint256 proposalId) external {
@@ -275,7 +253,6 @@ contract DataMarketplace {
         
         uint256 totalSlashedAmount = 0;
         
-        // Slash users who voted against the consensus
         for (uint i = 0; i < p.voters.length; i++) {
             address voter = p.voters[i];
             if (p.voteChoice[voter] != approved) {
@@ -285,11 +262,9 @@ contract DataMarketplace {
             }
         }
         
-        // Add slashed funds to this dataset's reward pool
         d.rewardPool += totalSlashedAmount;
 
         if (approved) {
-            // Reward the successful contributor from the dataset's pool
             require(d.rewardPool >= d.contributionReward, "Insufficient pool for contributor reward");
             d.rewardPool -= d.contributionReward;
             withdrawableBalance[p.proposer] += d.contributionReward;
@@ -308,7 +283,6 @@ contract DataMarketplace {
             p.status = ProposalStatus.Rejected; 
         }
 
-        // Reward all verifiers for their participation
         uint256 totalVerifierPayout = p.voters.length * d.verificationReward;
         require(d.rewardPool >= totalVerifierPayout, "Insufficient pool for verifier rewards");
         d.rewardPool -= totalVerifierPayout;
@@ -319,7 +293,7 @@ contract DataMarketplace {
 
         userReviewDetails[msg.sender][proposalId] = true;
         
-        // emit ContributionResolved(proposalId, approved, totalVerifierPayout, totalSlashedAmount);
+        emit ContributionResolved(proposalId, approved, totalVerifierPayout, totalSlashedAmount);
     }
 
 
@@ -328,17 +302,13 @@ contract DataMarketplace {
         require(d.price > 0, "Dataset not for sale");
         require(d.creator != msg.sender, "Creator cant buy dataset");
         
-        // Note for Frontend: The user must first approve the contract to spend d.price amount of DATA tokens.
         require(dataToken.transferFrom(msg.sender, address(this), d.price), "Payment failed");
 
-        // 80% of the price is distributed to the creator and contributors based on their shares.
         uint256 revenueShare = (d.price * 80) / 100;
         
-        // The remaining 20% is added to this specific dataset's reward pool.
         uint256 poolShare = d.price - revenueShare;
         d.rewardPool += poolShare;
 
-        // Distribute the revenue share to all current participants.
         require(d.totalSharePoints > 0, "No shareholders to pay");
         for (uint i = 0; i < d.participants.length; i++) {
             address participant = d.participants[i];
@@ -350,11 +320,9 @@ contract DataMarketplace {
             }
         }
         
-        // It's good practice to emit an event for purchases
-        //emit DatasetPurchased(datasetId, msg.sender, d.price);
+        emit DatasetPurchased(datasetId, msg.sender, d.price);
     }
 
-    // NEW: Safe withdrawal function (Pull-over-Push pattern)
     function claimRewards() external {
         uint256 amount = withdrawableBalance[msg.sender];
         require(amount > 0, "No rewards to claim");
@@ -377,16 +345,13 @@ contract DataMarketplace {
             return new ProposalData[](0);
         }
 
-        // This array now holds the mapping-free struct
         ProposalData[] memory userProposals = new ProposalData[](count);
         uint counter = 0;
 
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].proposer == _user) {
-                // Get a reference to the proposal in storage
                 ContributionProposal storage p = proposals[i];
                 
-                // Manually create the ProposalData struct in memory
                 userProposals[counter] = ProposalData({
                     proposalId: i,
                     datasetId: p.datasetId,
@@ -448,10 +413,8 @@ contract DataMarketplace {
     }
 
     function getAllDatasets() external view returns (DatasetView[] memory) {
-        // Create a memory array of the correct "view" struct type and exact size.
         DatasetView[] memory allDatasets = new DatasetView[](datasetCount);
 
-        // Loop through all datasets and copy their data into the view structs.
         for (uint i = 1; i <= datasetCount; i++) {
             Dataset storage d = datasets[i];
             allDatasets[i-1] = DatasetView({
@@ -494,17 +457,22 @@ contract DataMarketplace {
     }
 
     function getPendingProposals(address _user) external view returns (ProposalData[] memory, uint256) {
-
-        // This array now holds the mapping-free struct
-        ProposalData[] memory userProposals = new ProposalData[](proposalCount);
-        uint counter = 0;
-
+        uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].status == ProposalStatus.Pending && proposals[i].proposer == _user) {
-                // Get a reference to the proposal in storage
+                count++;
+            }
+        }
+
+        ProposalData[] memory userProposals = new ProposalData[](count);
+        if (count == 0) {
+            return (userProposals, 0);
+        }
+
+        uint counter = 0;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (proposals[i].status == ProposalStatus.Pending && proposals[i].proposer == _user) {
                 ContributionProposal storage p = proposals[i];
-                
-                // Manually create the ProposalData struct in memory
                 userProposals[counter] = ProposalData({
                     proposalId: i,
                     datasetId: p.datasetId,
@@ -518,27 +486,31 @@ contract DataMarketplace {
                     title: p.title,
                     description: p.description,
                     contribType: p.contribType,
-                    status : p.status
+                    status: p.status
                 });
-                
                 counter++;
             }
         }
-        return (userProposals, userProposals.length);
+        return (userProposals, count);
     }
 
     function getReviewedProposals(address _user) external view returns (ProposalData[] memory, uint256) {
-
-        // This array now holds the mapping-free struct
-        ProposalData[] memory userProposals = new ProposalData[](proposalCount);
-        uint counter = 0;
-
+        uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
-            if (userReviewDetails[msg.sender][i] == true && proposals[i].proposer == _user) {
-                // Get a reference to the proposal in storage
+            if (userReviewDetails[_user][i] == true && proposals[i].proposer == _user) {
+                count++;
+            }
+        }
+
+        ProposalData[] memory userProposals = new ProposalData[](count);
+        if (count == 0) {
+            return (userProposals, 0);
+        }
+
+        uint counter = 0;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (userReviewDetails[_user][i] == true && proposals[i].proposer == _user) {
                 ContributionProposal storage p = proposals[i];
-                
-                // Manually create the ProposalData struct in memory
                 userProposals[counter] = ProposalData({
                     proposalId: i,
                     datasetId: p.datasetId,
@@ -552,27 +524,31 @@ contract DataMarketplace {
                     title: p.title,
                     description: p.description,
                     contribType: p.contribType,
-                    status : p.status
+                    status: p.status
                 });
-                
                 counter++;
             }
         }
-        return (userProposals, userProposals.length);
+        return (userProposals, count);
     }
 
     function getPendingReviews(address _user) external view returns (ProposalData[] memory, uint256) {
+        uint count = 0;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (userReviewDetails[_user][i] == false && proposals[i].proposer == _user) {
+                count++;
+            }
+        }
 
-        // This array now holds the mapping-free struct
-        ProposalData[] memory userProposals = new ProposalData[](proposalCount);
+        ProposalData[] memory userProposals = new ProposalData[](count);
+        if (count == 0) {
+            return (userProposals, 0);
+        }
+
         uint counter = 0;
-
-        for (uint i = 1; i <= proposalCount; i++ ) {
-            if (userReviewDetails[msg.sender][i] == false && proposals[i].proposer == _user) {
-                // Get a reference to the proposal in storage
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (userReviewDetails[_user][i] == false && proposals[i].proposer == _user) {
                 ContributionProposal storage p = proposals[i];
-                
-                // Manually create the ProposalData struct in memory
                 userProposals[counter] = ProposalData({
                     proposalId: i,
                     datasetId: p.datasetId,
@@ -586,27 +562,31 @@ contract DataMarketplace {
                     title: p.title,
                     description: p.description,
                     contribType: p.contribType,
-                    status : p.status
+                    status: p.status
                 });
-                
                 counter++;
             }
         }
-        return (userProposals, userProposals.length);
+        return (userProposals, count);
     }
 
-     function getRejectedProposals(address _user) external view returns (ProposalData[] memory, uint256) {
-
-        // This array now holds the mapping-free struct
-        ProposalData[] memory userProposals = new ProposalData[](proposalCount);
-        uint counter = 0;
-
+    function getRejectedProposals(address _user) external view returns (ProposalData[] memory, uint256) {
+        uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].status == ProposalStatus.Rejected && proposals[i].proposer == _user) {
-                // Get a reference to the proposal in storage
+                count++;
+            }
+        }
+
+        ProposalData[] memory userProposals = new ProposalData[](count);
+        if (count == 0) {
+            return (userProposals, 0);
+        }
+
+        uint counter = 0;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (proposals[i].status == ProposalStatus.Rejected && proposals[i].proposer == _user) {
                 ContributionProposal storage p = proposals[i];
-                
-                // Manually create the ProposalData struct in memory
                 userProposals[counter] = ProposalData({
                     proposalId: i,
                     datasetId: p.datasetId,
@@ -620,27 +600,31 @@ contract DataMarketplace {
                     title: p.title,
                     description: p.description,
                     contribType: p.contribType,
-                    status : p.status
+                    status: p.status
                 });
-                
                 counter++;
             }
         }
-        return (userProposals, userProposals.length);
+        return (userProposals, count);
     }
 
-     function getApprovedProposals(address _user) external view returns (ProposalData[] memory, uint256) {
-
-        // This array now holds the mapping-free struct
-        ProposalData[] memory userProposals = new ProposalData[](proposalCount);
-        uint counter = 0;
-
+    function getApprovedProposals(address _user) external view returns (ProposalData[] memory, uint256) {
+        uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].status == ProposalStatus.Approved && proposals[i].proposer == _user) {
-                // Get a reference to the proposal in storage
+                count++;
+            }
+        }
+
+        ProposalData[] memory userProposals = new ProposalData[](count);
+        if (count == 0) {
+            return (userProposals, 0);
+        }
+        
+        uint counter = 0;
+        for (uint i = 1; i <= proposalCount; i++) {
+            if (proposals[i].status == ProposalStatus.Approved && proposals[i].proposer == _user) {
                 ContributionProposal storage p = proposals[i];
-                
-                // Manually create the ProposalData struct in memory
                 userProposals[counter] = ProposalData({
                     proposalId: i,
                     datasetId: p.datasetId,
@@ -654,17 +638,16 @@ contract DataMarketplace {
                     title: p.title,
                     description: p.description,
                     contribType: p.contribType,
-                    status : p.status
+                    status: p.status
                 });
-                
                 counter++;
             }
         }
-        return (userProposals, userProposals.length);
+        return (userProposals, count);
     }
 
-    function userVoteStatusByProposalId(uint256 proposalId) external view returns(bool) {
-        return userReviewDetails[msg.sender][proposalId];
+    function userVoteStatusByProposalId(address _user, uint256 proposalId) external view returns(bool) {
+        require(proposalId <= proposalCount && proposalId > 0, "Invalid proposal Id");
+        return userReviewDetails[_user][proposalId];
     }
-
 }

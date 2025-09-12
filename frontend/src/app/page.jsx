@@ -123,17 +123,17 @@ export default function Dashboard() {
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Quick Actions & Activity */}
-          <div className="lg:col-span-2 space-y-8">
+          {/* <div className="lg:col-span-2 space-y-8">
             <QuickActions />
             <RecentActivity 
               activity={recentActivity}
               isLoading={isLoading}
             />
-          </div>
+          </div> */}
 
           {/* Right Column - Leaderboard & Profile */}
           <div className="space-y-8">
-            <LeaderboardCard isLoading={isLoading} />
+            {/* <LeaderboardCard isLoading={isLoading} /> */}
             
             {/* Profile Quick View */}
             {user && (
@@ -145,14 +145,6 @@ export default function Dashboard() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-white/70">Role</span>
-                    <span className="text-white font-medium capitalize">{user.role}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-white/70">Reputation</span>
-                    <span className="text-white font-medium">{user.reputation_score}</span>
-                  </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-white/70">Contributions</span>
                     <span className="text-white font-medium">{user.contributions_count}</span>

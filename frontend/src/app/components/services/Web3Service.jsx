@@ -29,6 +29,12 @@ class Web3Service {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const accounts = await this.web3.eth.getAccounts();
         this.account = accounts[0];
+
+        window.ethereum.on('accountsChanged', (newAccounts) => {
+          console.log("Wallet account changed to:", newAccounts[0]);
+         
+          window.location.reload(); 
+        });
         
         // Initialize contract
         this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
@@ -304,10 +310,10 @@ class Web3Service {
         console.log("items from datasets", items)
         return (items || []).map((d, idx) => ({
           id: Number(d.id ?? idx),
-          owner: d.owner || this.account || '0x0',
+          owner: d.creator || '0x0',
           currentURI: d.currentURI || d.tokenURI || '',
           title: d.title || `Dataset #${Number(d.id ?? idx)}`,
-          description: d.description || (d.currentURI ? `IPFS URI: ${d.currentURI}` : ''),
+          description: d.description ,
           tags: d.tags || [],
           category: d.category || 'other',
           created_date: d.createdAt ? new Date(Number(d.createdAt) * 1000).toISOString() : new Date().toISOString(),
