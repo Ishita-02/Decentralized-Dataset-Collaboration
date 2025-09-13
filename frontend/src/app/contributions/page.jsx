@@ -58,12 +58,14 @@ export default function Contributions() {
 
       const approvedContributions = await Web3Service.getApprovedProposals();
       setApprovedProposals(approvedContributions);
+      console.log("pendinggggg", approvedContributions)
+
 
       const rejectedContributions = await Web3Service.getRejectedProposals();
       setRejectedProposals(rejectedContributions);
 
       const [allDatasets, userContributions] = await Promise.all([
-        await Web3Service.getAllDatasets(),
+        await Web3Service.getFavouriteDatasets(),
         await Web3Service.userContributions() // Use the correct function here
       ]);
 

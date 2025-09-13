@@ -210,7 +210,7 @@ export default function Downloads() {
                     </div>
                     <div className="flex items-center gap-1 text-white/60">
                       <FileText className="w-3 h-3" />
-                      <span>{dataset.size ? `${dataset.size / 1e6} MB` : 'N/A'}</span>
+                      <span>{dataset.size ? `${(dataset.size / 1e6).toFixed(2)} MB` : 'N/A'}</span>
                     </div>
                   </div>
 

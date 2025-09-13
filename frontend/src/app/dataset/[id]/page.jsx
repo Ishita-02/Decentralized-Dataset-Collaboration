@@ -14,7 +14,28 @@ import { useWeb3 } from '../../context/Web3Provider'; // Import global web3 cont
 export default function DatasetDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { id } = params;
+  
+  // ✅ FIX 1: Parse the ID correctly to handle URL encoding
+  const rawId = params.id;
+  console.log("Raw ID from params:", rawId);
+  
+  // Extract the actual ID from formats like "id=2" or "id%3D2"
+  let id;
+  if (rawId.includes('=') || rawId.includes('%3D')) {
+    // Handle both "id=2" and "id%3D2" formats
+    const decodedId = decodeURIComponent(rawId);
+    console.log("Decoded ID:", decodedId);
+    
+    if (decodedId.includes('=')) {
+      id = decodedId.split('=')[1];
+    } else {
+      id = decodedId;
+    }
+  } else {
+    id = rawId;
+  }
+  
+  console.log("Final parsed ID:", id);
 
   // Global state for wallet connection
   const { account } = useWeb3();
@@ -35,8 +56,8 @@ export default function DatasetDetailPage() {
         console.log("dataset id", id)
         // ✅ STEP 1: Fetch contract details and IPFS URL in parallel
         let [details, ipfsUrl] = await Promise.all([
-          Web3Service.getDatasetById(1),
-          Web3Service.getUserDatasetCurrentId(1)
+          Web3Service.getDatasetById(id),
+          Web3Service.getUserDatasetCurrentId(id)
         ]);
 
         // ✅ STEP 2: Set the main dataset state
@@ -67,6 +88,8 @@ export default function DatasetDetailPage() {
       loadData();
     }
   }, [id, account]);
+
+  const PREVIEW_ROW_LIMIT = 20;
 
   const parseCsvData = (csvText) => {
     if (!csvText || typeof csvText !== 'string') {
@@ -102,14 +125,15 @@ export default function DatasetDetailPage() {
             <CardHeader><CardTitle className="text-white">Dataset Details</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-2 gap-4 text-sm">
               <div><strong className="text-white/80">Creator:</strong> <span className="text-white/60 font-mono text-xs">{`${dataset.creator}`}</span></div>
-              <div><strong className="text-white/80">Price:</strong> <span className="text-yellow-400 font-bold">{dataset.price} DATA</span></div>
+              <div><strong className="text-white/80">Price:</strong> <span className="text-yellow-400 font-bold">{`${Number(dataset.price) / 1e18}`} DATA</span></div>
               <div><strong className="text-white/80">MIME Type:</strong> <span className="text-white/60">{dataset.mimeType}</span></div>
-              <div><strong className="text-white/80">File Size:</strong> <span className="text-white/60">{(dataset.size)} KB</span></div>
-              {/* <div><strong className="text-white/80">Storage:</strong> <a href={`${preview}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">View on IPFS</a></div> */}
+              <div><strong className="text-white/80">File Size:</strong> <span className="text-white/60">{`${(Number(dataset.size) / (1000000)).toFixed(2)}`} MB</span></div>
+              <div><strong className="text-white/80">Storage:</strong> <a href={`${dataset.currentURI}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">View on IPFS</a></div>
             </CardContent>
           </Card>
 
           {/* Tabs for Preview and History */}
+
           <Tabs defaultValue="preview">
             <TabsList className="bg-white/10">
               <TabsTrigger value="preview">Dataset Preview</TabsTrigger>
@@ -119,20 +143,32 @@ export default function DatasetDetailPage() {
               <Card>
                 <CardContent className="p-2 sm:p-4 overflow-x-auto">
                   {previewData && previewData.header.length > 0 ? (
-                    <table className="w-full text-sm text-left">
-                      <thead className="text-xs text-white/70 uppercase bg-white/5">
-                        <tr>
-                          {previewData.header.map((h, i) => <th key={i} className="px-4 py-2 font-medium">{h.trim()}</th>)}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {previewData.rows.map((row, i) => (
-                          <tr key={i} className="border-b border-white/10">
-                            {row.map((cell, j) => <td key={j} className="px-4 py-2 text-white/90">{cell.trim()}</td>)}
+                    <>
+                      <table className="w-full text-sm text-left">
+                        <thead className="text-xs text-white/70 uppercase bg-white/5">
+                          <tr>
+                            {previewData.header.map((h, i) => <th key={i} className="px-4 py-2 font-medium">{h.trim()}</th>)}
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {/* Use .slice() to create a new array with just the first 20 rows.
+                            This prevents the slow rendering of thousands of elements.
+                          */}
+                          {previewData.rows.slice(0, PREVIEW_ROW_LIMIT).map((row, i) => (
+                            <tr key={i} className="border-b border-white/10">
+                              {row.map((cell, j) => <td key={j} className="px-4 py-2 text-white/90">{cell.trim()}</td>)}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {/* Add a helpful message to the user if the data is truncated.
+                      */}
+                      {previewData.rows.length > PREVIEW_ROW_LIMIT && (
+                        <p className="text-xs text-white/50 text-center mt-4">
+                          Showing the first {PREVIEW_ROW_LIMIT} rows of {previewData.rows.length} total.
+                        </p>
+                      )}
+                    </>
                   ) : <p className="text-white/60 text-center py-8">No data preview is available for this dataset.</p>}
                 </CardContent>
               </Card>

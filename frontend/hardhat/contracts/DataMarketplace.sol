@@ -56,6 +56,7 @@ contract DataMarketplace {
         mapping(address => uint256) sharePoints;
         address[] participants;
         mapping(address => bool) isParticipant;
+        uint256 downloads;
     }
     struct DatasetView {
         uint256 id;
@@ -71,6 +72,7 @@ contract DataMarketplace {
         uint256 verificationReward;
         uint256 rewardPool;
         string category;
+        uint256 downloads;
     }
 
     struct Verifier {
@@ -125,6 +127,7 @@ contract DataMarketplace {
 
     mapping(address => uint256) public userVerificationCount;
     mapping(address => uint256) public userSuccessfulContributionCount;
+    mapping(uint256 => mapping(address => bool)) public userFavorites;
 
     uint256 public constant MINIMUM_STAKE = 1000 * 10**18; 
     uint256 public constant VOTE_DURATION = 2 minutes;
@@ -140,6 +143,7 @@ contract DataMarketplace {
     event RewardsClaimed(address indexed user, uint256 amount);
     event ContributionResolved(uint256 indexed proposalId, bool approved, uint256 rewardsDistributed, uint256 totalSlashed);
     event DatasetPurchased(uint256 indexed datasetId, address indexed user, uint256 price);
+    event DatasetFavorited(uint256 indexed datasetId, address indexed user, bool isFavorite);
 
 
     constructor(address _tokenAddress) {
@@ -183,7 +187,6 @@ contract DataMarketplace {
         d.mimeType = params.mimeType;
         d.createdAt = block.timestamp;
         d.category = params.category;
-
         d.contributionReward = params.contributionReward;
         d.verificationReward = params.verificationReward;
         d.rewardPool = params.totalRewardPool;
@@ -192,6 +195,9 @@ contract DataMarketplace {
         d.sharePoints[msg.sender] = CREATOR_INITIAL_SHARES;
         d.isParticipant[msg.sender] = true;
         d.participants.push(msg.sender);
+        d.downloads = 0;
+
+        userFavorites[datasetCount][msg.sender] = false;
 
         emit DatasetUploaded(datasetCount, msg.sender, params.title, params.totalRewardPool);
     }
@@ -219,8 +225,9 @@ contract DataMarketplace {
     function voteOnContribution(uint256 proposalId, bool vote) external {
         Verifier storage verifier = verifiers[msg.sender];
         require(verifier.isVerifier, "Not a verifier");
-        
+
         ContributionProposal storage p = proposals[proposalId];
+        require(p.proposer != msg.sender, "Contributors cannot verify their own contributions");
         require(block.timestamp < p.voteDeadline, "Voting period has ended");
         require(!p.hasVoted[msg.sender], "Already voted");
 
@@ -308,6 +315,8 @@ contract DataMarketplace {
         
         uint256 poolShare = d.price - revenueShare;
         d.rewardPool += poolShare;
+        d.downloads += 1;
+
 
         require(d.totalSharePoints > 0, "No shareholders to pay");
         for (uint i = 0; i < d.participants.length; i++) {
@@ -319,6 +328,7 @@ contract DataMarketplace {
                 withdrawableBalance[participant] += earnings;
             }
         }
+
         
         emit DatasetPurchased(datasetId, msg.sender, d.price);
     }
@@ -430,7 +440,8 @@ contract DataMarketplace {
                 contributionReward: d.contributionReward,
                 verificationReward: d.verificationReward,
                 rewardPool: d.rewardPool,
-                category: d.category
+                category: d.category,
+                downloads: d.downloads
             });
         }
 
@@ -452,11 +463,12 @@ contract DataMarketplace {
             contributionReward: d.contributionReward,
             verificationReward: d.verificationReward,
             rewardPool: d.rewardPool,
-            category: d.category
+            category: d.category,
+            downloads: d.downloads
         });
     }
 
-    function getPendingProposals(address _user) external view returns (ProposalData[] memory, uint256) {
+    function getPendingProposals(address _user) external view returns (ProposalData[] memory) {
         uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].status == ProposalStatus.Pending && proposals[i].proposer == _user) {
@@ -466,7 +478,7 @@ contract DataMarketplace {
 
         ProposalData[] memory userProposals = new ProposalData[](count);
         if (count == 0) {
-            return (userProposals, 0);
+            return userProposals;
         }
 
         uint counter = 0;
@@ -491,25 +503,27 @@ contract DataMarketplace {
                 counter++;
             }
         }
-        return (userProposals, count);
+        return userProposals;
     }
 
-    function getReviewedProposals(address _user) external view returns (ProposalData[] memory, uint256) {
+    function getReviewedProposals(address _user) external view returns (ProposalData[] memory) {
         uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
-            if (userReviewDetails[_user][i] == true && proposals[i].proposer == _user) {
+            uint256 datasetId = proposals[i].datasetId;
+            if (userReviewDetails[_user][i] == true && userFavorites[datasetId][_user] == true) {
                 count++;
             }
         }
 
         ProposalData[] memory userProposals = new ProposalData[](count);
         if (count == 0) {
-            return (userProposals, 0);
+            return userProposals;
         }
 
         uint counter = 0;
         for (uint i = 1; i <= proposalCount; i++) {
-            if (userReviewDetails[_user][i] == true && proposals[i].proposer == _user) {
+            uint256 datasetId = proposals[i].datasetId;
+            if (userReviewDetails[_user][i] == true && userFavorites[datasetId][_user] == true) {
                 ContributionProposal storage p = proposals[i];
                 userProposals[counter] = ProposalData({
                     proposalId: i,
@@ -529,25 +543,27 @@ contract DataMarketplace {
                 counter++;
             }
         }
-        return (userProposals, count);
+        return userProposals;
     }
 
-    function getPendingReviews(address _user) external view returns (ProposalData[] memory, uint256) {
+    function getPendingReviews(address _user) external view returns (ProposalData[] memory) {
         uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
-            if (userReviewDetails[_user][i] == false && proposals[i].proposer == _user) {
+            uint256 datasetId = proposals[i].datasetId;
+            if (userReviewDetails[_user][i] == false && userFavorites[datasetId][_user] == true) {
                 count++;
             }
         }
 
         ProposalData[] memory userProposals = new ProposalData[](count);
         if (count == 0) {
-            return (userProposals, 0);
+            return userProposals;
         }
 
         uint counter = 0;
         for (uint i = 1; i <= proposalCount; i++) {
-            if (userReviewDetails[_user][i] == false && proposals[i].proposer == _user) {
+            uint256 datasetId = proposals[i].datasetId;
+            if (userReviewDetails[_user][i] == false && userFavorites[datasetId][_user] == true) {
                 ContributionProposal storage p = proposals[i];
                 userProposals[counter] = ProposalData({
                     proposalId: i,
@@ -567,10 +583,10 @@ contract DataMarketplace {
                 counter++;
             }
         }
-        return (userProposals, count);
+        return userProposals;
     }
 
-    function getRejectedProposals(address _user) external view returns (ProposalData[] memory, uint256) {
+    function getRejectedProposals(address _user) external view returns (ProposalData[] memory) {
         uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].status == ProposalStatus.Rejected && proposals[i].proposer == _user) {
@@ -580,7 +596,7 @@ contract DataMarketplace {
 
         ProposalData[] memory userProposals = new ProposalData[](count);
         if (count == 0) {
-            return (userProposals, 0);
+            return userProposals;
         }
 
         uint counter = 0;
@@ -605,10 +621,10 @@ contract DataMarketplace {
                 counter++;
             }
         }
-        return (userProposals, count);
+        return userProposals;
     }
 
-    function getApprovedProposals(address _user) external view returns (ProposalData[] memory, uint256) {
+    function getApprovedProposals(address _user) external view returns (ProposalData[] memory) {
         uint count = 0;
         for (uint i = 1; i <= proposalCount; i++) {
             if (proposals[i].status == ProposalStatus.Approved && proposals[i].proposer == _user) {
@@ -618,7 +634,7 @@ contract DataMarketplace {
 
         ProposalData[] memory userProposals = new ProposalData[](count);
         if (count == 0) {
-            return (userProposals, 0);
+            return userProposals;
         }
         
         uint counter = 0;
@@ -643,11 +659,65 @@ contract DataMarketplace {
                 counter++;
             }
         }
-        return (userProposals, count);
+        return userProposals;
     }
 
     function userVoteStatusByProposalId(address _user, uint256 proposalId) external view returns(bool) {
         require(proposalId <= proposalCount && proposalId > 0, "Invalid proposal Id");
         return userReviewDetails[_user][proposalId];
     }
+
+   function getFavouriteDatasets(address _user) external view returns (DatasetView[] memory) {
+        uint count = 0;
+        for (uint i = 1; i <= datasetCount; i++) {
+            if (userFavorites[i][_user] == true) {
+                count++;
+            }
+        }
+
+        if (count == 0) {
+            return new DatasetView[](0);
+        }
+
+        DatasetView[] memory favoriteDatasets = new DatasetView[](count);
+        uint counter = 0;
+
+        for (uint i = 1; i <= datasetCount; i++) {
+            if (userFavorites[i][_user] == true) {
+                Dataset storage d = datasets[i];
+                favoriteDatasets[counter] = DatasetView({
+                    id: i,
+                    creator: d.creator,
+                    currentURI: d.currentURI,
+                    price: d.price,
+                    title: d.title,
+                    description: d.description,
+                    size: d.size,
+                    mimeType: d.mimeType,
+                    createdAt: d.createdAt,
+                    contributionReward: d.contributionReward,
+                    verificationReward: d.verificationReward,
+                    rewardPool: d.rewardPool,
+                    category: d.category,
+                    downloads: d.downloads
+                });
+                counter++;
+            }
+        }
+
+        return favoriteDatasets;
+    }
+
+
+    function toggleFavourite(uint256 _datasetId) external {
+        require(datasets[_datasetId].creator != address(0), "Dataset does not exist");
+
+        // Toggle the favorite status for the message sender
+        bool isCurrentlyFavorite = userFavorites[_datasetId][msg.sender];
+        userFavorites[_datasetId][msg.sender] = !isCurrentlyFavorite;
+
+        emit DatasetFavorited(_datasetId, msg.sender, !isCurrentlyFavorite);
+    }
+
+
 }

@@ -11,7 +11,7 @@ import {
   FileText,
   Calendar,
   User,
-  Coins
+  Coins, Hourglass
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -50,16 +50,15 @@ export default function VerificationCard({  contribution, onVote }) {
             <div className="flex items-center gap-4 text-sm text-white/60">
               <div className="flex items-center gap-1">
                 <User className="w-4 h-4" />
-                <span>{contribution.contributor}</span>
+                <span>{contribution.proposer}</span>
               </div>
               <div className="flex items-center gap-1">
                 <FileText className="w-4 h-4" />
                 <span className="capitalize">{ContributionTypeText[contribution.contribType]?.replace('_', ' ')}</span>
               </div>
-              {/* <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                <span>{format(new Date(contribution.created_date), 'MMM d, yyyy')}</span>
-              </div> */}
+              <Hourglass className="w-4 h-4 text-yellow-400" />
+              <span className="font-medium text-white/70">Deadline:</span>
+              <span>{format(new Date(Number(contribution.voteDeadline) * 1000), 'MMM d, yyyy, h:mm:ss a')}</span>
             </div>
           </div>
           

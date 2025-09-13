@@ -12,7 +12,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useWeb3 } from "../app/context/Web3Provider";
 
 const navigationItems = [
-    { title: "Dashboard", href: "/", icon: LayoutDashboard },
     { title: "Browse Datasets", href: "/browse", icon: Database },
     { title: "Upload Dataset", href: "/upload", icon: Upload },
     { title: "My Contributions", href: "/contributions", icon: Users },

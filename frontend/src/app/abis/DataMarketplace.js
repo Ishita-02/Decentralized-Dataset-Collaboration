@@ -83,6 +83,31 @@ const dataMarketplaceABI = [
         },
         {
           "indexed": false,
+          "internalType": "bool",
+          "name": "isFavorite",
+          "type": "bool"
+        }
+      ],
+      "name": "DatasetFavorited",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "datasetId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "indexed": false,
           "internalType": "uint256",
           "name": "price",
           "type": "uint256"
@@ -370,6 +395,11 @@ const dataMarketplaceABI = [
           "internalType": "uint256",
           "name": "totalSharePoints",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "downloads",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -445,6 +475,11 @@ const dataMarketplaceABI = [
               "internalType": "string",
               "name": "category",
               "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "downloads",
+              "type": "uint256"
             }
           ],
           "internalType": "struct DataMarketplace.DatasetView[]",
@@ -536,11 +571,6 @@ const dataMarketplaceABI = [
           "internalType": "struct DataMarketplace.ProposalData[]",
           "name": "",
           "type": "tuple[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -635,11 +665,107 @@ const dataMarketplaceABI = [
               "internalType": "string",
               "name": "category",
               "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "downloads",
+              "type": "uint256"
             }
           ],
           "internalType": "struct DataMarketplace.DatasetView",
           "name": "",
           "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_user",
+          "type": "address"
+        }
+      ],
+      "name": "getFavouriteDatasets",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "id",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "creator",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "currentURI",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "price",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "title",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "description",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "size",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "mimeType",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "createdAt",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "contributionReward",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "verificationReward",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "rewardPool",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "category",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "downloads",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct DataMarketplace.DatasetView[]",
+          "name": "",
+          "type": "tuple[]"
         }
       ],
       "stateMutability": "view",
@@ -726,11 +852,6 @@ const dataMarketplaceABI = [
           "internalType": "struct DataMarketplace.ProposalData[]",
           "name": "",
           "type": "tuple[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -817,11 +938,6 @@ const dataMarketplaceABI = [
           "internalType": "struct DataMarketplace.ProposalData[]",
           "name": "",
           "type": "tuple[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -908,11 +1024,6 @@ const dataMarketplaceABI = [
           "internalType": "struct DataMarketplace.ProposalData[]",
           "name": "",
           "type": "tuple[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -999,11 +1110,6 @@ const dataMarketplaceABI = [
           "internalType": "struct DataMarketplace.ProposalData[]",
           "name": "",
           "type": "tuple[]"
-        },
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -1172,6 +1278,19 @@ const dataMarketplaceABI = [
     {
       "inputs": [],
       "name": "stakeToVerify",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_datasetId",
+          "type": "uint256"
+        }
+      ],
+      "name": "toggleFavourite",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1361,6 +1480,30 @@ const dataMarketplaceABI = [
           "internalType": "uint256[]",
           "name": "",
           "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "userFavorites",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",

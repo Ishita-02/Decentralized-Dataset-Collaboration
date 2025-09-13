@@ -1,4 +1,4 @@
-// Verify.jsx - CORRECTED VERSION
+// Verify.jsx - FIXED VERSION
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -33,92 +33,126 @@ export default function Verify() {
   
   // State for UI control
   const [showStakeDialog, setShowStakeDialog] = useState(false);
+  
+  // Track if data has been loaded to prevent duplicate calls
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  // ❌ REMOVED: Conflicting local state like isVerifiers, web3Connected, etc.
-
-  // ✅ 2. A single, clean useEffect to load data
+  // ✅ 2. A single, clean useEffect to load data - ONLY runs after user becomes verifier
   useEffect(() => {
     const loadPageData = async () => {
+      // Prevent duplicate calls
+      if (dataLoaded) return;
+      
       setLoading(true);
-      if (isVerifier) {
-        console.log("verifier", isVerifier)
-        // Fetch data relevant only to verifiers
-        const pendingReviews = await Web3Service.getPendingReviews();
-        console.log("proposal verify page", pendingReviews)
-        setPendingReviews(pendingReviews);
-        // TODO: You would also fetch the user's past verifications here
-        const reviewedProposals = await Web3Service.getReviewedProposals();
-        console.log("reviewed proposal", reviewedProposals)
-        setMyVerifications(reviewedProposals);
-
-        const reviewsCompleted = await Web3Service.getReviewedProposals();
-        setReviewCompleted(reviewsCompleted);
-
-        const userVoteStatusByProposalId = await Web3Service.userVoteStatusByProposalId(1);
-        console.log(userVoteStatusByProposalId)
-        setVoted(userVoteStatusByProposalId);
-
+      console.log("Loading page data - isVerifier:", isVerifier, "account:", account);
+      
+      if (isVerifier && account) {
+        try {
+          console.log("User is verifier, fetching data...");
+          
+          // Fetch data relevant only to verifiers
+          const pendingReviews = await Web3Service.getPendingReviews();
+          console.log("proposal verify page", pendingReviews);
+          setPendingReviews(pendingReviews);
+          
+          // Fetch reviewed proposals
+          const reviewedProposals = await Web3Service.getReviewedProposals();
+          console.log("reviewed proposal", reviewedProposals);
+          setMyVerifications(reviewedProposals);
+          setReviewCompleted(reviewedProposals);
+          
+          setDataLoaded(true); // Mark data as loaded
+          console.log("Data loading completed");
+          
+        } catch (error) {
+          console.error("Error loading verifier data:", error);
+        }
       }
+      
       setLoading(false);
     };
 
-    // Only load data if the user's wallet is connected.
-    if (account) {
+    if (isVerifier && account && !dataLoaded) {
       loadPageData();
-    } else {
-      // If no account, we aren't loading anything.
-      setLoading(false); 
+    } else if (!account || !isVerifier) {
+      // If no account or not verifier, stop loading
+      setLoading(false);
+      setDataLoaded(false); // Reset so data can be loaded when they become verifier
     }
-  }, [account, isVerifier]); 
+  }, [account, isVerifier, dataLoaded]); 
   
-  // Add this new useEffect in your Verify.jsx file
-
-useEffect(() => {
-  // Don't run if the main list is empty
-  if (myVerifications.length === 0) {
-    setIsLoadingVotes(false);
-    return;
-  }
-
-  const fetchAllVoteStatuses = async () => {
-    setIsLoadingVotes(true);
-    try {
-      // Create a list of promises, one for each verification
-      const promises = myVerifications.map(verification =>
-        Web3Service.userVoteStatusByProposalId(verification.proposalId)
-      );
-      
-      // Wait for all of them to finish
-      const results = await Promise.all(promises);
-      
-      // Create a new status map object like { proposalId: true, ... }
-      const statuses = {};
-      myVerifications.forEach((verification, index) => {
-        statuses[verification.proposalId] = results[index];
-      });
-      
-      setVoteStatuses(statuses);
-    } catch (error) {
-      console.error("Failed to fetch one or more vote statuses:", error);
+  // ✅ 3. Separate useEffect for vote statuses - FIXED to not run duplicate calls
+  useEffect(() => {
+    // Don't run if the main list is empty or if we're still loading votes
+    if (myVerifications.length === 0 || isLoadingVotes === false) {
+      if (myVerifications.length === 0) {
+        setIsLoadingVotes(false);
+      }
+      return;
     }
-    setIsLoadingVotes(false);
-  };
 
-  fetchAllVoteStatuses();
-}, [myVerifications]); // This hook runs whenever the myVerifications list changes// This hook re-runs whenever account or isVerifier status changes
+    const fetchAllVoteStatuses = async () => {
+      console.log("Fetching vote statuses for", myVerifications.length, "verifications");
+      setIsLoadingVotes(true);
+      
+      try {
+        // Create a list of promises, one for each verification
+        const promises = myVerifications.map(verification => {
+          console.log("Fetching vote status for proposal:", verification.proposalId);
+          return Web3Service.userVoteStatusByProposalId(verification.proposalId);
+        });
+        
+        // Wait for all of them to finish
+        const results = await Promise.all(promises);
+        
+        // Create a new status map object like { proposalId: true, ... }
+        const statuses = {};
+        myVerifications.forEach((verification, index) => {
+          statuses[verification.proposalId] = results[index];
+        });
+        
+        console.log("Vote statuses loaded:", statuses);
+        setVoteStatuses(statuses);
+        
+      } catch (error) {
+        console.error("Failed to fetch one or more vote statuses:", error);
+      }
+      
+      setIsLoadingVotes(false);
+    };
 
+    // Only fetch if we haven't loaded vote statuses yet
+    fetchAllVoteStatuses();
+  }, [myVerifications]); // Removed isLoadingVotes from dependency to prevent loop
+
+  // ✅ 4. FIXED: handleStakeSuccess - reload data after staking
   const handleStakeSuccess = () => {
-    // The useWeb3 hook should automatically update isVerifier.
-    // We just need to close the dialog.
+    console.log("Stake successful! User should now be verifier.");
     setShowStakeDialog(false);
+    
+    // Reset data loading state so useEffect will run again
+    setDataLoaded(false);
+    
+    // The useWeb3 hook should automatically update isVerifier.
     // The useEffect will automatically re-fetch data because `isVerifier` will change.
+    // Force a small delay to ensure blockchain state is updated
+    setTimeout(() => {
+      console.log("Checking verifier status after stake...");
+      // The useEffect should trigger automatically when isVerifier updates
+    }, 2000);
   };
 
   const handleVote = async (contributionId, proposalId, vote) => {
     try {
+      console.log("Voting on proposal:", proposalId, "vote:", vote);
+      
       // Refresh pending contributions after voting
       const proposals = await Web3Service.getPendingProposals();
       setPendingContributions(proposals);
+      
+      // Also refresh pending reviews
+      const updatedPendingReviews = await Web3Service.getPendingReviews();
+      setPendingReviews(updatedPendingReviews);
 
     } catch (error) {
       console.error("Error submitting vote:", error);
@@ -134,7 +168,10 @@ useEffect(() => {
     return { completed, totalEarned };
   };
 
-    const stats = getVerificationStats();
+  const stats = getVerificationStats();
+
+  // ✅ 5. Debug logging
+  console.log("Verify page render - account:", account, "isVerifier:", isVerifier, "loading:", loading, "dataLoaded:", dataLoaded);
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -165,7 +202,7 @@ useEffect(() => {
                   <p className="text-yellow-300/70 text-sm">Connect your wallet to become a verifier</p>
                 </div>
                 <Button 
-                  onClick={() => Web3Service.connectWallet()}
+                  onClick={() => connectWallet()}
                   className="bg-yellow-500 hover:bg-yellow-600 text-black"
                 >
                   Connect Wallet
@@ -215,8 +252,8 @@ useEffect(() => {
           </Card>
         )}
 
-        {/* Stats Grid */}
-        {isVerifier && (
+        {/* Stats Grid - Only show when user is verifier and data is loaded */}
+        {isVerifier && !loading && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardContent className="p-6 text-center">
@@ -237,7 +274,7 @@ useEffect(() => {
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
               <CardContent className="p-6 text-center">
                 <Coins className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
-                <div className="text-2xl font-bold text-white">{stats?.totalEarned}</div>
+                <div className="text-2xl font-bold text-white">{stats?.totalEarned || 0}</div>
                 <p className="text-white/60 text-sm">DATA Earned</p>
               </CardContent>
             </Card>
@@ -252,7 +289,7 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Main Content */}
+        {/* Main Content - Only show when user is verifier */}
         {isVerifier && (
           <Tabs defaultValue="pending-reviews">
             <TabsList className="bg-white/10">
@@ -290,12 +327,12 @@ useEffect(() => {
               ) : (
                 <div className="space-y-4">
                   {pendingReviews.map((contribution) => (
-                    <div key={contribution.proposalId}> {/* Key is on the outside element */}
-                    <VerificationCard 
-                      contribution={contribution}
-                      onVote={handleVote}
-                    />
-                  </div>
+                    <div key={contribution.proposalId}>
+                      <VerificationCard 
+                        contribution={contribution}
+                        onVote={handleVote}
+                      />
+                    </div>
                   ))}
                 </div>
               )}
@@ -313,12 +350,10 @@ useEffect(() => {
               ) : (
                 <div className="space-y-4">
                   {myVerifications.map((verification, index) => {
-                    // --- THIS IS THE UPDATED LOGIC ---
-                    
-                    // 1. Look up the vote status for THIS specific verification
+                    // Look up the vote status for THIS specific verification
                     const hasVoted = voteStatuses[verification.proposalId];
                     
-                    // 2. Define styles and classes based on the lookup result
+                    // Define styles and classes based on the lookup result
                     const baseBadgeClasses = 'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold';
                     const statusClasses = hasVoted
                       ? 'bg-green-500/10 text-green-400 border-green-500/20'
@@ -339,7 +374,6 @@ useEffect(() => {
                                   {hasVoted ? 'Approved' : 'Rejected'}
                                 </div>
                               )}
-
                             </div>
                             <div className="text-right">
                               {Number(verification.yesVotes) > 0 && (

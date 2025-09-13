@@ -6,19 +6,26 @@ import {
   Users, 
   Download, 
   Coins,
-  Calendar,
   FileText,
   Eye,
   Plus,
-  ExternalLink
+  Star, // Make sure Star is imported,
+  Loader2
 } from "lucide-react";
 import { format } from "date-fns";
-// import { Link } from "react-router-dom";
 import { useRouter } from "next/navigation"; 
 import { createPageUrl } from "@/components/ui/utils";
 
-export default function DatasetCard({ dataset }) {
-  console.log("dataset from DatasetCard", dataset)
+// UPDATED: The component now accepts the onToggleFavorite and isFavorite props
+export default function DatasetCard({ dataset, onToggleFavorite, isFavorite, isToggling  }) {
+
+  console.log("DatasetCard props:", { 
+        datasetId: dataset?.id, 
+        hasToggleFunction: typeof onToggleFavorite === 'function',
+        isFavorite 
+    });
+  const router = useRouter();
+
   const getCategoryColor = (category) => {
     const colors = {
       machine_learning: "bg-blue-500/10 text-blue-400 border-blue-500/20",
@@ -32,28 +39,73 @@ export default function DatasetCard({ dataset }) {
     return colors[category] || colors.other;
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
-      open_for_contributions: "bg-green-500/10 text-green-400 border-green-500/20",
-      under_verification: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-      verified: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-      published: "bg-purple-500/10 text-purple-400 border-purple-500/20"
-    };
-    return colors[status] || colors.open_for_contributions;
+  const handleFavoriteClick = (e) => {
+    console.log("=== FAVORITE BUTTON CLICKED ===");
+    console.log("Dataset ID:", dataset.id);
+    console.log("Current isFavorite:", isFavorite);
+    console.log("Is toggling:", isToggling);
+    
+    // Prevent the click from bubbling up and triggering navigation
+    e.stopPropagation(); 
+    e.preventDefault();
+    
+    // Don't allow clicking if already toggling
+    if (isToggling) {
+      console.log("Already toggling, ignoring click");
+      return;
+    }
+    
+    // Call the function passed down from the parent page
+    if (typeof onToggleFavorite === 'function') {
+      console.log("Calling onToggleFavorite...");
+      onToggleFavorite(dataset.id);
+    } else {
+      console.error("onToggleFavorite is not a function:", typeof onToggleFavorite);
+    }
   };
-  const router = useRouter();
 
-  return (
+ return (
     <Card className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 transition-all duration-300 group">
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
-          <Badge variant="outline" className={getCategoryColor(dataset.category)}>
+          <div className={`px-3 py-1 rounded-full text-xs font-medium border ${getCategoryColor(dataset.category)}`}>
             {dataset.category.replace('_', ' ')}
-          </Badge>
-          {/* <Badge variant="outline" className={getStatusColor(dataset.status)}>
-            {dataset.status.replace('_', ' ')}
-          </Badge> */}
+          </div>
+          
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleFavoriteClick}
+            disabled={isToggling} 
+            className={`
+              h-8 w-8 -mt-1 -mr-2 transition-all duration-200
+              ${isToggling 
+                ? 'text-white/30 cursor-not-allowed' 
+                : isFavorite 
+                  ? 'text-yellow-400 hover:text-yellow-300' 
+                  : 'text-white/60 hover:text-yellow-400'
+              }
+              hover:bg-white/10
+            `}
+            aria-label={`${isFavorite ? 'Remove from' : 'Add to'} favorites`}
+            data-dataset-id={dataset.id}
+          >
+            {isToggling ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Star 
+                className={`
+                  w-5 h-5 transition-all duration-200
+                  ${isFavorite 
+                    ? 'text-yellow-400 fill-yellow-400 drop-shadow-sm' 
+                    : 'text-current'
+                  }
+                `} 
+              />
+            )}
+          </Button>
         </div>
+        
         <CardTitle className="text-white text-lg group-hover:text-blue-300 transition-colors">
           {dataset.title}
         </CardTitle>
@@ -63,22 +115,6 @@ export default function DatasetCard({ dataset }) {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Tags */}
-        {dataset.tags && dataset.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {dataset.tags.slice(0, 3).map((tag, index) => (
-              <Badge key={index} variant="outline" className="text-xs bg-white/5 text-white/70 border-white/10">
-                {tag}
-              </Badge>
-            ))}
-            {dataset.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs bg-white/5 text-white/40 border-white/10">
-                +{dataset.tags.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
-
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 text-xs">
           <div className="flex items-center gap-1 text-white/60">
@@ -91,7 +127,7 @@ export default function DatasetCard({ dataset }) {
           </div>
           <div className="flex items-center gap-1 text-white/60">
             <FileText className="w-3 h-3" />
-            {dataset.size ? `${dataset.size / 1e6} MB` : 'N/A'}
+            {dataset.size ? `${Number(dataset.size / 1e6).toFixed(2)} MB` : 'N/A'}
           </div>
         </div>
 
@@ -101,14 +137,14 @@ export default function DatasetCard({ dataset }) {
             <div className="flex items-center gap-2">
               <Coins className="w-4 h-4 text-yellow-400" />
               <span className="text-white text-sm font-medium">
-                {dataset.contribution_reward} DATA per contribution
+                {(Number(dataset.contribution_reward) || '0')} DATA per contribution
               </span>
             </div>
           </div>
         </div>
 
         {/* Actions */}
-       <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 pt-2">
           <Button
             variant="outline"
             className="flex-1 w-full border-white/20 text-white hover:bg-white/10 text-sm"
@@ -131,10 +167,11 @@ export default function DatasetCard({ dataset }) {
 
         {/* Metadata */}
         <div className="flex items-center justify-between text-xs text-white/40 pt-2 border-t border-white/10">
-          <span>By {dataset.owner?.split('@')[0]}</span>
+          <span>By {dataset.owner}</span>
           <span>{format(new Date(dataset.created_date), 'MMM d, yyyy')}</span>
         </div>
       </CardContent>
     </Card>
   );
 }
+

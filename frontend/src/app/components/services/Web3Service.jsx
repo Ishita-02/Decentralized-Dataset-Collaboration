@@ -138,15 +138,11 @@ class Web3Service {
     console.log("active contributors web3js", activeContributors)
     return {
       id: address || 'guest',
-      email: address ? `${address.toLowerCase()}@wallet` : 'guest@wallet',
       full_name: address || 'Guest',
-      role: 'both',
       tokens_balance: Number(balance) || 0,
-      reputation_score: 0,
       contributions_count: activeContributors,
-      verifications_count: varificationsDone.length,
+      verifications_count: varificationsDone.length || 0,
       total_earned: Number(earned) || 0,
-      specializations: []
     };
   }
 
@@ -426,11 +422,8 @@ class Web3Service {
     }
     try {
       const result = await this.contract.methods.getPendingProposals(this.account).call();
-      console.log("result", result[0])
-      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
-        result[0] = [];
-      }
-      return result[0];
+      console.log("result", result)
+      return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
       return [];
@@ -443,11 +436,9 @@ class Web3Service {
     }
     try {
       const result = await this.contract.methods.getReviewedProposals(this.account).call();
-      console.log("result", result[0])
-      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
-        result[0] = [];
-      }
-      return result[0];
+      console.log("result", result)
+     
+      return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
       return [];
@@ -460,11 +451,8 @@ class Web3Service {
     }
     try {
       const result = await this.contract.methods.getPendingReviews(this.account).call();
-      console.log("result", result[0])
-      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
-        result[0] = [];
-      }
-      return result[0];
+      console.log("result", result)
+      return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
       return [];
@@ -477,11 +465,8 @@ class Web3Service {
     }
     try {
       const result = await this.contract.methods.getRejectedProposals(this.account).call();
-      console.log("result", result[0])
-      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
-        result[0] = [];
-      }
-      return result[0];
+      console.log("result", result)
+      return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
       return [];
@@ -494,11 +479,8 @@ class Web3Service {
     }
     try {
       const result = await this.contract.methods.getApprovedProposals(this.account).call();
-      console.log("result", result[0])
-      if (result[0][0].proposer == "0x0000000000000000000000000000000000000000") {
-        result[0] = [];
-      }
-      return result[0];
+      console.log("result", result)
+      return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
       return [];
@@ -510,11 +492,15 @@ class Web3Service {
       await this.init();
     }
     try {
-      const result = await this.contract.methods.userVoteStatusByProposalId(id).call();
+      if (id == 0) {
+        return;
+      }
+      const result = await this.contract.methods.userVoteStatusByProposalId(this.account, id).call();
+      console.log("result from contract", result)
       return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
-      return [];
+      return ;
     }
   }
 
@@ -524,6 +510,50 @@ class Web3Service {
     }
     try {
       const result = await this.contract.methods.resolveContribution(id).call();
+      return result;
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return [];
+    }
+  }
+
+  async toggleFavourite(id) {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      await this.contract.methods.toggleFavourite(id).send({
+        from: this.account
+      });
+      const result = await this.contract.methods.userFavorites(id, this.account).call();
+      console.log("result from contract", result)
+      return result;
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return;
+    }
+  }
+
+  async userFavorites(id) {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.userFavorites(id, this.account).call();
+      console.log("result from contract", result)
+      return result;
+    } catch (e) {
+      console.warn('No dataset found or failed to fetch, returning empty list');
+      return;
+    }
+  }
+
+  async getFavouriteDatasets() {
+    if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
+      await this.init();
+    }
+    try {
+      const result = await this.contract.methods.getFavouriteDatasets(this.account).call();
       return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');

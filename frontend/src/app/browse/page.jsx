@@ -1,59 +1,138 @@
-// ### File: src/app/browse/page.jsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import { 
-  Search, 
-  Filter, 
-  Database,
-  Plus
-} from "lucide-react";
+import { Search, Database, ArrowLeft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import Web3Service from "../components/services/Web3Service"; // Your Web3 service
-import DatasetCard from "../components/browse/DatasetCard"; // Your DatasetCard component
+import Web3Service from "../components/services/Web3Service";
+import DatasetCard from "../components/browse/DatasetCard";
 import { useWeb3 } from "../context/Web3Provider";
+import { useRouter } from "next/navigation"; 
+import { Button } from "@/components/ui/button";
+import { createPageUrl } from "@/components/ui/utils";
+
+
 
 export default function BrowsePage() {
   const [datasets, setDatasets] = useState([]);
   const [filteredDatasets, setFilteredDatasets] = useState([]);
-  // const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-
   
-  // Get the connection status from your Web3Context
-  // We use `account` to know IF we are connected, and `isLoading` to know WHEN to check.
+  // NEW: State to store the IDs of favorited datasets
+  const [favoriteStatus, setFavoriteStatus] = useState(new Map());
+  const [isFetching, setIsFetching] = useState(true);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(new Set());
+
   const { account, isLoading } = useWeb3();
 
-  const loadDatasets = async () => {
+  const router = useRouter();
+
+  const checkIfFavorited = async (datasetId) => {
     try {
-      const contractDatasets = await Web3Service.getAllDatasets();
-      console.log("Contract datasets fetched:", contractDatasets);
-      setDatasets(contractDatasets);
-      setFilteredDatasets(contractDatasets);
+      const isFavorited = await Web3Service.userFavorites(datasetId);
+      console.log(`Dataset ${datasetId} favorite status:`, isFavorited);
+      return isFavorited;
     } catch (error) {
-      console.error("Error loading datasets:", error);
+      console.error(`Error checking favorite status for dataset ${datasetId}:`, error);
+      return false;
     }
   };
 
-  // This effect now correctly depends on the provider's state
-  useEffect(() => {
-    // The condition:
-    // 1. `!isLoading`: The provider has finished its initial connection attempt.
-    // 2. `account`: The connection was successful and we have a user account.
-    if (!isLoading && account) {
-      console.log("Provider is ready. Loading datasets for account:", account);
-      loadDatasets();
-    } else if (!isLoading && !account) {
-      // Handle the case where the user is not connected
-      console.log("Provider finished loading, but no wallet connected.");
-      setIsFetching(false); // Stop the loading spinner
-      setDatasets([]); // Ensure data is cleared
-      setFilteredDatasets([]);
+  const loadFavoriteStatus = async (datasetList) => {
+    if (!account || !datasetList.length) return;
+
+    console.log("Loading favorite status for all datasets...");
+    const statusMap = new Map();
+
+    // Check favorite status for each dataset
+    const favoritePromises = datasetList.map(async (dataset) => {
+      const isFavorited = await checkIfFavorited(dataset.id);
+      statusMap.set(dataset.id, isFavorited);
+      return { id: dataset.id, isFavorited };
+    });
+
+    try {
+      await Promise.all(favoritePromises);
+      console.log("All favorite statuses loaded:", statusMap);
+      setFavoriteStatus(statusMap);
+    } catch (error) {
+      console.error("Error loading favorite statuses:", error);
     }
-  }, [account, isLoading]);
+  };
+  
+
+  const handleToggleFavorite = async (datasetId) => {
+    console.log(`Toggling favorite for dataset ID: ${datasetId}`);
+    
+    // Prevent multiple simultaneous toggles for the same dataset
+    if (isTogglingFavorite.has(datasetId)) {
+      console.log("Already toggling favorite for this dataset, ignoring...");
+      return;
+    }
+
+    // Add to toggling set
+    setIsTogglingFavorite(prev => new Set([...prev, datasetId]));
+
+    try {
+      // Call the contract method
+      const result = await Web3Service.toggleFavourite(datasetId);
+      console.log("Toggle result from contract:", result);
+
+      // Check if we got a valid result (true/false)
+      if (typeof result === 'boolean') {
+        console.log(`Successfully ${result ? 'added to' : 'removed from'} favorites!`);
+        
+        // Add a small delay to ensure transaction is processed, then refresh
+        setTimeout(() => {
+          console.log("Refreshing page to reflect changes...");
+          window.location.reload();
+        }, 1000); // 1 second delay
+        
+      } else {
+        console.error("Unexpected result from contract:", result);
+        throw new Error("Invalid response from contract");
+      }
+
+    } catch (error) {
+      console.error("Error toggling favorite status:", error);
+      
+      // Remove from toggling set on error
+      setIsTogglingFavorite(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(datasetId);
+        return newSet;
+      });
+
+      // Show error to user
+      alert(`Failed to update favorite status: ${error.message || 'Unknown error'}`);
+    }
+    
+    // Note: We don't remove from toggling set on success because page will refresh
+  };
+
+  const loadData = useCallback(async () => {
+    if (!account) return;
+    setIsFetching(true);
+    
+    try {
+      console.log("Loading datasets for account:", account);
+      
+      // Fetch datasets
+      const contractDatasets = await Web3Service.getAllDatasets();
+      console.log("Contract datasets fetched:", contractDatasets);
+      
+      setDatasets(contractDatasets);
+      setFilteredDatasets(contractDatasets);
+
+      // Load favorite status for all datasets
+      await loadFavoriteStatus(contractDatasets);
+
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setIsFetching(false);
+    }
+  }, [account]);
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
@@ -65,9 +144,45 @@ export default function BrowsePage() {
     setFilteredDatasets(filtered);
   };
 
-  
+  useEffect(() => {
+    if (!isLoading && account) {
+      console.log("Provider is ready. Loading data for account:", account);
+      loadData();
+    } else if (!isLoading && !account) {
+      console.log("Provider finished loading, but no wallet connected.");
+      setIsFetching(false);
+      setDatasets([]);
+      setFilteredDatasets([]);
+    }
+  }, [account, isLoading, loadData]);
+
+  useEffect(() => {
+    if (!isLoading && account) {
+      console.log("Provider is ready. Loading data for account:", account);
+      loadData();
+    } else if (!isLoading && !account) {
+      console.log("Provider finished loading, but no wallet connected.");
+      setIsFetching(false);
+      setDatasets([]);
+      setFilteredDatasets([]);
+      setFavoriteStatus(new Map());
+    }
+  }, [account, isLoading, loadData]);
+
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
+
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push(createPageUrl("/"))}
+          className="text-white hover:bg-white/10"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+      </div>
       {/* Header */}
       <div className="text-center space-y-4">
         <h1 className="text-3xl md:text-5xl font-bold text-white">
@@ -93,13 +208,11 @@ export default function BrowsePage() {
                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40"
               />
             </div>
-            {/* Add more filter dropdowns here if needed */}
         </CardContent>
       </Card>
 
-      {/* Datasets Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isLoading ? (
+        {isFetching ? (
           <p className="text-white/70 col-span-full text-center">Loading datasets from the blockchain...</p>
         ) : filteredDatasets.length === 0 ? (
           <div className="col-span-full text-center py-12">
@@ -107,9 +220,20 @@ export default function BrowsePage() {
             <h3 className="text-xl font-medium text-white mb-2">No datasets found</h3>
           </div>
         ) : (
-          filteredDatasets.map((dataset) => (
-            <DatasetCard key={dataset.id} dataset={dataset} />
-          ))
+          filteredDatasets.map((dataset) => {
+            const isFavorited = favoriteStatus.get(dataset.id) || false;
+            const isToggling = isTogglingFavorite.has(dataset.id);
+            
+            return (
+              <DatasetCard 
+                key={dataset.id} 
+                dataset={dataset}
+                onToggleFavorite={handleToggleFavorite}
+                isFavorite={isFavorited}
+                isToggling={isToggling} // Pass loading state
+              />
+            );
+          })
         )}
       </div>
     </div>
