@@ -31,7 +31,7 @@ export default function VerificationCard({  contribution, onVote }) {
     setVoting(true);
     try {
       console.log("contribution vote", contribution.proposalId, approve)
-      await Web3Service.voteOnContribution(contribution.proposalId, approve);
+      await Web3Service.voteOnContribution(Number(contribution.proposalId), approve);
       // await onVote(contribution.id, contribution.proposal_id, approve);
     } catch (error) {
       console.error("Error voting:", error);

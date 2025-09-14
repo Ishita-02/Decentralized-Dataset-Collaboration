@@ -26,9 +26,43 @@ export default function Profile() {
   const [userVerifications, setUserVerifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const STATUS_TEXT = [
+    "pending",  // Index 0
+    "approved", // Index 1
+    "rejected"  // Index 2
+  ];
+
+  // Array for the corresponding Tailwind CSS classes.
+  const STATUS_STYLES = [
+    'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', // Style for index 0
+    'bg-green-500/10 text-green-400 border-green-500/20',   // Style for index 1
+    'bg-red-500/10 text-red-400 border-red-500/20'       // Style for index 2
+  ];
+
   useEffect(() => {
     loadProfileData();
   }, []);
+
+   const getCategoryColor = (category) => {
+    const colors = {
+      machine_learning: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      finance: "bg-green-500/10 text-green-400 border-green-500/20",
+      healthcare: "bg-red-500/10 text-red-400 border-red-500/20",
+      research: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+      education: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+      marketing: "bg-pink-500/10 text-pink-400 border-pink-500/20",
+      other: "bg-gray-500/10 text-gray-400 border-gray-500/20"
+    };
+    return colors[category] || colors.other;
+  };
+
+  const ContributionTypeText = [
+    "data_cleaning",
+    "data_addition",
+    "annotation",
+    "validation",
+    "documentation",
+  ];
 
   const loadProfileData = async () => {
     try {
@@ -89,10 +123,10 @@ export default function Profile() {
                 {/* <p className="text-white/60 mb-4">{user?.email}</p> */}
                 
                 <div className="flex flex-wrap gap-3">
-                  <Badge className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-300 border-blue-500/20">
+                  {/* <Badge className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-300 border-blue-500/20">
                     <UserIcon className="w-3 h-3 mr-1" />
                     {user?.role === 'both' ? 'Contributor & Verifier' : user?.role}
-                  </Badge>
+                  </Badge> */}
                   {user?.specializations?.map((spec, index) => (
                     <Badge key={index} variant="outline" className="border-white/20 text-white/70">
                       {spec}
@@ -155,12 +189,12 @@ export default function Profile() {
                 <TabsTrigger value="datasets" className="data-[state=active]:bg-white/20">
                   My Datasets ({userDatasets.length})
                 </TabsTrigger>
-                <TabsTrigger value="contributions" className="data-[state=active]:bg-white/20">
+                {/* <TabsTrigger value="contributions" className="data-[state=active]:bg-white/20">
                   Contributions ({userContributions.length})
                 </TabsTrigger>
                 <TabsTrigger value="verifications" className="data-[state=active]:bg-white/20">
                   Verifications ({userVerifications.length})
-                </TabsTrigger>
+                </TabsTrigger> */}
               </TabsList>
 
               <TabsContent value="datasets" className="space-y-4">
@@ -178,9 +212,9 @@ export default function Profile() {
                             <h3 className="font-medium text-white mb-1">{dataset.title}</h3>
                             <p className="text-white/60 text-sm mb-2">{dataset.description}</p>
                             <div className="flex gap-2">
-                              <Badge variant="outline" className="text-xs border-white/20 text-white/70">
+                              <div className={`px-3 py-1 rounded-full text-xs font-medium border ${getCategoryColor(dataset.category)}`}>
                                 {dataset.category.replace('_', ' ')}
-                              </Badge>
+                              </div>
                               {/* <Badge variant="outline" className="text-xs border-white/20 text-white/70">
                                 {dataset.status.replace('_', ' ')}
                               </Badge> */}
@@ -214,18 +248,21 @@ export default function Profile() {
                           <div>
                             <h3 className="font-medium text-white mb-1">{contribution.title}</h3>
                             <p className="text-white/60 text-sm mb-2">{contribution.description}</p>
-                            {/* <Badge variant="outline" className="text-xs border-white/20 text-white/70">
-                              {contribution.contribution_type.replace('_', ' ')}
-                            </Badge> */}
+                            {/* <p className="text-xs text-white/70">
+                              {ContributionTypeText[contribution.contribType]?.replace('_', ' ')}
+                            </p> */}
+                            <span className="text-xs text-white/70">
+                              {ContributionTypeText[contribution.contribType]?.replace('_', ' ')}
+                            </span>
                           </div>
                           <div className="text-right">
-                            <Badge className={`mb-2 ${
-                              contribution.status === 'approved' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                              contribution.status === 'rejected' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                              'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
-                            }`}>
-                              {contribution.status}
-                            </Badge>
+                             <div 
+                              className={`inline-block capitalize px-3 py-1 text-xs font-medium rounded-full border mb-2 ${
+                                STATUS_STYLES[Number(contribution.status)] || STATUS_STYLES[0] // Safely fallback to 'pending' style
+                              }`}
+                            >
+                              {STATUS_TEXT[Number(contribution.status)] || 'Unknown'} {/* Safely fallback to 'Unknown' text */}
+                            </div>
                             {contribution.tokens_earned > 0 && (
                               <div className="text-yellow-400 text-sm font-medium">
                                 +{contribution.tokens_earned} DATA

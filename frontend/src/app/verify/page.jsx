@@ -5,15 +5,24 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWeb3 } from '../context/Web3Provider'; // Make sure the path is correct
 import Web3Service from '../../app/components/services/Web3Service'; // We still need this for now
+import { format } from "date-fns"; // ?? NEW ADDITION
 
 // Import your UI components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Coins, ShieldCheck, Clock, CheckCircle, Award, FileText } from 'lucide-react';
+import { ArrowLeft, Coins, ShieldCheck, Clock, CheckCircle, Award, FileText, XCircle, User } from 'lucide-react';
 import StakeDialog from '../components/verify/StakeDialog'; // Assuming you have this
 import VerificationCard from '../components/verify/VerificationCard'; // Assuming you have this
+
+const ContributionTypeText = [
+  "data_cleaning",
+  "data_addition",
+  "annotation",
+  "validation",
+  "documentation",
+];
 
 export default function Verify() {
   // ✅ 1. Get ALL web3 state and functions from the hook
@@ -28,7 +37,8 @@ export default function Verify() {
   const [reviewCompleted, setReviewCompleted] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [voted, setVoted] = useState(false);
-  const [voteStatuses, setVoteStatuses] = useState({}); // Will store vote status for each proposal, e.g., { 1: true, 2: false }
+  const [voteStatuses, setVoteStatuses] = useState({}); 
+  const [expiredReviews, setExpiredReviews] = useState([]);// Will store vote status for each proposal, e.g., { 1: true, 2: false }
   const [isLoadingVotes, setIsLoadingVotes] = useState(true);
   
   // State for UI control
@@ -53,13 +63,36 @@ export default function Verify() {
           // Fetch data relevant only to verifiers
           const pendingReviews = await Web3Service.getPendingReviews();
           console.log("proposal verify page", pendingReviews);
-          setPendingReviews(pendingReviews);
+
+          const nowInSeconds = Date.now() / 1000;
+          const activePendingReviews = [];
+          const expiredFromPending = [];
+          
+          for (const review of pendingReviews) {
+            // If deadline has passed, move it to the expired list
+            if (Number(review.voteDeadline) < nowInSeconds) {
+              expiredFromPending.push(review);
+            } else {
+              // Otherwise, it's an active pending review
+              activePendingReviews.push(review);
+            }
+          }
+          
+          console.log("Active pending reviews:", activePendingReviews);
+          console.log("Expired reviews:", expiredFromPending);
+
+          setExpiredReviews(expiredFromPending);
+          setPendingReviews(activePendingReviews);
+
+          
           
           // Fetch reviewed proposals
           const reviewedProposals = await Web3Service.getReviewedProposals();
-          console.log("reviewed proposal", reviewedProposals);
+          console.log("reviewed proposal", reviewedProposals);          
+
           setMyVerifications(reviewedProposals);
           setReviewCompleted(reviewedProposals);
+
           
           setDataLoaded(true); // Mark data as loaded
           console.log("Data loading completed");
@@ -146,13 +179,8 @@ export default function Verify() {
     try {
       console.log("Voting on proposal:", proposalId, "vote:", vote);
       
-      // Refresh pending contributions after voting
-      const proposals = await Web3Service.getPendingProposals();
-      setPendingContributions(proposals);
-      
-      // Also refresh pending reviews
-      const updatedPendingReviews = await Web3Service.getPendingReviews();
-      setPendingReviews(updatedPendingReviews);
+      // Refresh data after voting
+      setDataLoaded(false); // new additions
 
     } catch (error) {
       console.error("Error submitting vote:", error);
@@ -299,6 +327,9 @@ export default function Verify() {
               <TabsTrigger value="my-verifications" className="data-[state=active]:bg-white/20">
                 My Reviews ({myVerifications.length})
               </TabsTrigger>
+              <TabsTrigger value="expired-reviews" className="data-[state=active]:bg-white/20">
+                Expired Reviews ({expiredReviews.length})
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="pending-reviews" className="space-y-6">
@@ -387,6 +418,60 @@ export default function Verify() {
                       </Card>
                     );
                   })}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="expired-reviews" className="space-y-6">
+              {loading ? (
+                <div className="space-y-4">
+                  {Array(3).fill(0).map((_, i) => (
+                    <Card key={i} className="bg-white/5 backdrop-blur-xl border-white/10 animate-pulse">
+                      <CardContent className="p-6">
+                        <div className="space-y-3">
+                          <div className="h-6 bg-white/10 rounded w-1/3"></div>
+                          <div className="h-4 bg-white/10 rounded w-2/3"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : expiredReviews.length === 0 ? (
+                <Card className="bg-white/5 backdrop-blur-xl border-white/10">
+                  <CardContent className="text-center py-12">
+                    <CheckCircle className="w-16 h-16 text-white/20 mx-auto mb-4" />
+                    <h3 className="text-xl font-medium text-white mb-2">No Expired Reviews</h3>
+                    <p className="text-white/60">You have voted on all assigned reviews before their deadlines.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {expiredReviews.map((review, index) => (
+                    <Card key={`${review.proposalId}-${index}`} className="bg-red-900/20 border-red-500/20">
+                      <CardContent className="p-6">
+                        <div>
+                          <h3 className="font-medium text-white mb-2">{review.title}</h3>
+                          <p className="text-white/60 text-sm mb-4">{review.description}</p>
+                          <div className="flex items-center justify-between text-sm text-white/60">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-1">
+                                <User className="w-4 h-4" />
+                                <span>{review.proposer}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <FileText className="w-4 h-4" />
+                                <span className="capitalize">{ContributionTypeText[review.contribType]?.replace('_', ' ')}</span>
+                              </div>
+                            </div>
+                            <div className="inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold bg-red-500/20 text-red-400 border-red-500/30">
+                              <XCircle className="w-4 h-4 mr-2" />
+                              Expired on {format(new Date(Number(review.voteDeadline) * 1000), 'MMM d, yyyy, h:mm:ss a')}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               )}
             </TabsContent>

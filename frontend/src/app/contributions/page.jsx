@@ -45,6 +45,7 @@ export default function Contributions() {
     checkWeb3Connection();
   }, []);
 
+
   const loadData = async () => {
     try {
       await Web3Service.init();
@@ -79,6 +80,19 @@ export default function Contributions() {
       console.error("Error loading data:", error);
     }
     setLoading(false);
+  };
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      machine_learning: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      finance: "bg-green-500/10 text-green-400 border-green-500/20",
+      healthcare: "bg-red-500/10 text-red-400 border-red-500/20",
+      research: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+      education: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+      marketing: "bg-pink-500/10 text-pink-400 border-pink-500/20",
+      other: "bg-gray-500/10 text-gray-400 border-gray-500/20"
+    };
+    return colors[category] || colors.other;
   };
 
   const checkWeb3Connection = async () => {
@@ -280,12 +294,12 @@ export default function Contributions() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <Badge className="bg-green-500/10 text-green-400 border-green-500/20">
+                        <div className={`px-3 py-1 rounded-full text-xs font-medium border ${getCategoryColor(dataset.category)}`}>
                           {dataset.category.replace('_', ' ')}
-                        </Badge>
+                        </div>
                         <div className="flex items-center gap-1 text-yellow-400">
                           <Coins className="w-4 h-4" />
-                          <span className="font-medium">{dataset.contribution_reward} DATA</span>
+                          <span className="font-medium">{Number(dataset.contributionReward)} DATA</span>
                         </div>
                       </div>
                       <Button 

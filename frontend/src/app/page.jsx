@@ -79,12 +79,12 @@ export default function Dashboard() {
       const userContributions = contributions.slice(0, 3);
       const userVerifications = verifications.slice(0, 3);
 
-      const activity = [
-        ...userContributions.map(c => ({ ...c, type: 'contribution' })),
-        ...userVerifications.map(v => ({ ...v, type: 'verification' }))
-      ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      // const activity = [
+      //   ...userContributions.map(c => ({ ...c, type: 'contribution' })),
+      //   ...userVerifications.map(v => ({ ...v, type: 'verification' }))
+      // ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
 
-      setRecentActivity(activity);
+      // setRecentActivity(activity);
     } catch (error) {
       console.error("Error loading dashboard:", error);
     }

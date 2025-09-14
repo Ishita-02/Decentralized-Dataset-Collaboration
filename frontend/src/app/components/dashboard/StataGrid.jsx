@@ -42,7 +42,7 @@ export default function StatsGrid({ stats, userTokens, userReputation, isLoading
     },
     {
       title: "Total Earned",
-      value: `${stats.totalEarned * 1e18} DATA`,
+      value: `${stats.totalEarned} DATA`,
       icon: TrendingUp,
       gradient: "from-indigo-500 to-purple-500",
       bgGradient: "from-indigo-500/10 to-purple-500/10"

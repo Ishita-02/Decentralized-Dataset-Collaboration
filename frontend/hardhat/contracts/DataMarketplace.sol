@@ -667,7 +667,7 @@ contract DataMarketplace {
         return userReviewDetails[_user][proposalId];
     }
 
-   function getFavouriteDatasets(address _user) external view returns (DatasetView[] memory) {
+    function getFavouriteDatasets(address _user) external view returns (DatasetView[] memory) {
         uint count = 0;
         for (uint i = 1; i <= datasetCount; i++) {
             if (userFavorites[i][_user] == true) {
@@ -717,6 +717,20 @@ contract DataMarketplace {
         userFavorites[_datasetId][msg.sender] = !isCurrentlyFavorite;
 
         emit DatasetFavorited(_datasetId, msg.sender, !isCurrentlyFavorite);
+    }
+
+    function checkUpkeep(bytes calldata /* checkData */) external view returns (bool upkeepNeeded, bytes memory performData) {
+        for (uint256 i = 1; i < proposalCount; i++) {
+            ContributionProposal storage p = proposals[i];
+            if (block.timestamp >= p.voteDeadline && !p.resolved) {
+                upkeepNeeded = true;
+                performData = abi.encode(i); // Pass the proposalId
+                return (upkeepNeeded, performData);
+            }
+        }
+        upkeepNeeded = false;
+        performData = bytes("");
+        return (upkeepNeeded, performData);
     }
 
 

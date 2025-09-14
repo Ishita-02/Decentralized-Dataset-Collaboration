@@ -7,14 +7,15 @@ class Web3Service {
   constructor() {
 
     this.contract = null;
+    this.tokenContract = null;
     
     this.account = null;
-    this.tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    this.tokenAddress = "0x8A0560A7EC1F32cD11208462a3321e1EE8B31Ad9"
     this.contractABI = dataMarketplaceABI;
     this.tokenContractABI = dataTokenABI;
     
     // Replace with your deployed contract address
-    this.contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; // UPDATE THIS
+    this.contractAddress = "0x66aF4674DA64810A5De733A13597C4778b8cACFe";
 
   }
 
@@ -22,13 +23,14 @@ class Web3Service {
   async init() {
     if (typeof window.ethereum !== 'undefined') {
       // Modern dapp browsers
-      this.web3 = new Web3("http://127.0.0.1:8545/");
+      this.web3 = new Web3(window.ethereum); 
       
       try {
         // Request account access
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const accounts = await this.web3.eth.getAccounts();
         this.account = accounts[0];
+        console.log("account", this.account)
 
         window.ethereum.on('accountsChanged', (newAccounts) => {
           console.log("Wallet account changed to:", newAccounts[0]);
@@ -124,27 +126,34 @@ class Web3Service {
     }
   }
 
-
   async getCurrentUser() {
-    // Derive a pseudo user from wallet. No DB.
     const connected = await this.isConnected();
-    console.log("connected", connected)
-    const address = connected ? this.account : null;
-    const earned = connected ? await this.getWithdrawableBalance().catch(() => 0) : 0;
-    const balance = connected ? await this.dataTokenBalance() : 0;
-    console.log("balance", balance);
-    const varificationsDone = connected ? await this.getReviewedProposals() : 0;
-    const activeContributors = await this.contract.methods.getContributorCount().call();
-    console.log("active contributors web3js", activeContributors)
-    return {
-      id: address || 'guest',
-      full_name: address || 'Guest',
-      tokens_balance: Number(balance) || 0,
-      contributions_count: activeContributors,
-      verifications_count: varificationsDone.length || 0,
-      total_earned: Number(earned) || 0,
-    };
+    if (!connected) {
+      return { id: 'guest', full_name: 'Guest', tokens_balance: 0, contributions_count: 0, verifications_count: 0, total_earned: 0 };
+    }
+
+    try {
+      const [earned, balance, varificationsDone, activeContributors] = await Promise.all([
+        this.getWithdrawableBalance().catch(() => 0),
+        this.dataTokenBalance().catch(() => 0),
+        this.getReviewedProposals().catch(() => []),
+        this.contract.methods.getContributorCount().call().catch(() => 0),
+      ]);
+
+      return {
+        id: this.account,
+        full_name: this.account,
+        tokens_balance: Number(balance) || 0,
+        contributions_count: activeContributors,
+        verifications_count: varificationsDone.length || 0,
+        total_earned: Number(earned) || 0,
+      };
+    } catch (err) {
+      console.error("Error in getCurrentUser:", err);
+      return { id: this.account, full_name: this.account, tokens_balance: 0, contributions_count: 0, verifications_count: 0, total_earned: 0 };
+    }
   }
+
 
   async getVerifierInfo() {
     if (!this.contract || !this.account) {
@@ -381,7 +390,7 @@ class Web3Service {
       console.log("balance", balance);
       return balance;
     } catch (e) {
-      console.warn('Balance failed, returning empty list');
+      console.warn('Balance failed, returning empty');
       return;
     }
     
@@ -560,7 +569,6 @@ class Web3Service {
       return [];
     }
   }
-
 
 }
 
