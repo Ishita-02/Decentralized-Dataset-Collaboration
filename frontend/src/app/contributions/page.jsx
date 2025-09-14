@@ -14,7 +14,7 @@ import {
   Upload,
   ArrowLeft,
   Coins,
-  Users
+  Users, Zap
 } from "lucide-react";
 import { useRouter } from "next/navigation"; 
 import { createPageUrl } from "@/components/ui/utils";
@@ -35,6 +35,8 @@ export default function Contributions() {
   const [pendingPorposals, setPendingProposals] = useState([]);
   const [approvedPorposals, setApprovedProposals] = useState([]);
   const [rejectedPorposals, setRejectedProposals] = useState([]);
+  const [resolvingId, setResolvingId] = useState(null);
+
 
 
   const router = useRouter();
@@ -81,6 +83,23 @@ export default function Contributions() {
     }
     setLoading(false);
   };
+
+  const handleResolve = async (proposalId) => {
+    setResolvingId(proposalId); // Set loading state for this specific button
+    try {
+      // IMPORTANT: Ensure your Web3Service uses .send() for this transaction, not .call()
+      await Web3Service.resolveContribution(proposalId);
+      alert('Contribution resolved successfully! The data will now refresh.');
+      await loadData(); // Refresh all data on the page
+    } catch (error) {
+      console.error("Failed to resolve contribution:", error);
+      const reason = error.reason || "The transaction was rejected or failed.";
+      alert(`Failed to resolve contribution: ${reason}`);
+    } finally {
+      setResolvingId(null); // Clear loading state
+    }
+  };
+
 
   const getCategoryColor = (category) => {
     const colors = {
@@ -267,10 +286,52 @@ export default function Contributions() {
                 </CardContent>
               </Card>
             ) : (
+              
               <div className="space-y-4">
-                {contributions.map((contribution) => (
-                  <ContributionCard key = {Number(contribution.datasetId)} contribution={contribution} />
-                ))}
+                {contributions.map((contribution) => {
+                  const isDeadlinePassed = new Date() > new Date(Number(contribution.voteDeadline) * 1000);
+                  
+                  let statusElement;
+                  const baseClasses = "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold";
+
+                  if (contribution.resolved) {
+                      const statusText = contribution.yesVotes > contribution.noVotes ? 'Approved' : 'Rejected';
+                      const statusColor = contribution.yesVotes > contribution.noVotes ? 'text-green-400 border-green-500/30 bg-green-500/10' : 'text-red-400 border-red-500/30 bg-red-500/10';
+                      statusElement = <div className={`${baseClasses} ${statusColor}`}>{statusText}</div>;
+                  } else if (isDeadlinePassed) {
+                      statusElement = <div className={`${baseClasses} text-yellow-400 border-yellow-500/30 bg-yellow-500/10`}>Ready to Resolve</div>;
+                  } else {
+                      statusElement = <div className={`${baseClasses} text-white/60 border-white/20`}>Voting in Progress</div>;
+                  }
+
+                  return (
+                    <Card key={contribution.proposalId.toString()} className="bg-white/5 backdrop-blur-xl border-white/10">
+                      <CardContent className="p-6">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h3 className="font-medium text-white mb-2">{contribution.title}</h3>
+                            <p className="text-white/60 text-sm mb-3">Deadline: {format(new Date(Number(contribution.voteDeadline) * 1000), 'MMM d, yyyy, h:mm a')}</p>
+                            {statusElement}
+                          </div>
+                          <div className="text-right">
+                            {/* ?? NEW ADDITION: Conditional "Resolve" button */}
+                            {!contribution.resolved && isDeadlinePassed && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleResolve(Number(contribution.proposalId))}
+                                disabled={resolvingId === contribution.proposalId.toString()}
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                <Zap className="w-4 h-4 mr-2" />
+                                {resolvingId === contribution.proposalId.toString() ? 'Resolving...' : 'Resolve'}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </TabsContent>

@@ -50,7 +50,7 @@ export default function StatsGrid({ stats, userTokens, userReputation, isLoading
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       {statCards.map((stat, index) => (
         <Card key={index} className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 transition-all duration-300">
           <CardContent className="p-6">

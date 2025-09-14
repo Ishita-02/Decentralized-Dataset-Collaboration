@@ -123,13 +123,13 @@ export default function Dashboard() {
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column - Quick Actions & Activity */}
-          {/* <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8">
             <QuickActions />
-            <RecentActivity 
+            {/* <RecentActivity 
               activity={recentActivity}
               isLoading={isLoading}
-            />
-          </div> */}
+            /> */}
+          </div>
 
           {/* Right Column - Leaderboard & Profile */}
           <div className="space-y-8">

@@ -10,12 +10,12 @@ class Web3Service {
     this.tokenContract = null;
     
     this.account = null;
-    this.tokenAddress = "0x8A0560A7EC1F32cD11208462a3321e1EE8B31Ad9"
+    this.tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
     this.contractABI = dataMarketplaceABI;
     this.tokenContractABI = dataTokenABI;
     
     // Replace with your deployed contract address
-    this.contractAddress = "0x66aF4674DA64810A5De733A13597C4778b8cACFe";
+    this.contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
   }
 
@@ -23,7 +23,7 @@ class Web3Service {
   async init() {
     if (typeof window.ethereum !== 'undefined') {
       // Modern dapp browsers
-      this.web3 = new Web3(window.ethereum); 
+      this.web3 = new Web3("http://127.0.0.1:8545"); 
       
       try {
         // Request account access
@@ -567,6 +567,23 @@ class Web3Service {
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
       return [];
+    }
+  }
+
+  async getVerifierVote(proposalId) {
+    if (!this.contract) {
+      console.error("Contract not initialized");
+      return null;
+    }
+    try {
+      // Calls the 'getVerifierVote' view function on your smart contract
+      const voteChoice = await this.contract.methods.getVerifierVote(proposalId, this.account).call();
+      // Returns true for 'Approve', false for 'Reject'
+      return voteChoice;
+    } catch (error) {
+      console.error("Error fetching verifier vote:", error);
+      // Return null or a default value if the verifier hasn't voted or if there's an error
+      return null; 
     }
   }
 

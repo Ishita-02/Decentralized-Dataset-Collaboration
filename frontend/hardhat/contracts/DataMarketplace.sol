@@ -733,5 +733,12 @@ contract DataMarketplace {
         return (upkeepNeeded, performData);
     }
 
+    function getVerifierVote(uint256 proposalId, address verifier) external view returns (bool) {
+        require(proposalId > 0 && proposalId <= proposalCount, "Invalid proposal ID");
+        require(proposals[proposalId].hasVoted[verifier], "Verifier has not voted on this proposal");
+        
+        return proposals[proposalId].voteChoice[verifier];
+    }
+
 
 }

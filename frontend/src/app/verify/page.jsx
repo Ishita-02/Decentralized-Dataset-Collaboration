@@ -132,6 +132,8 @@ export default function Verify() {
         // Create a list of promises, one for each verification
         const promises = myVerifications.map(verification => {
           console.log("Fetching vote status for proposal:", verification.proposalId);
+          const myVote = Web3Service.userVoteStatusByProposalId(verification.proposalId);
+          console.log("vote", myVote)
           return Web3Service.userVoteStatusByProposalId(verification.proposalId);
         });
         
