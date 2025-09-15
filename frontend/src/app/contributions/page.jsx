@@ -22,6 +22,7 @@ import { format } from "date-fns";
 
 import ContributeForm from "../components/contributions/ContributeForm";
 import ContributionCard from "../components/contributions/ContributionCard";
+
 import Web3Service from "../components/services/Web3Service"; // Updated import path
 
 export default function Contributions() {
@@ -49,39 +50,47 @@ export default function Contributions() {
 
 
   const loadData = async () => {
+    setLoading(true); // Start loading
     try {
+      // First, initialize the service and get a confirmed connection
       await Web3Service.init();
+      const connected = await Web3Service.isConnected();
+      setWeb3Connected(connected);
 
-      const currentUser = await Web3Service.getCurrentUser();
-      console.log("current user", currentUser)
-      setUser(currentUser);
+      // ?? NEW ADDITION: Only proceed if the user is connected
+      if (connected) {
+        // Get the current user's account first to ensure it's available
+        const currentUser = await Web3Service.getCurrentUser();
+        console.log("current user on contributions page", currentUser);
+        setUser(currentUser);
 
-      const pendingContributions = await Web3Service.getPendingProposals();
-      setPendingProposals(pendingContributions);
+        // Now that we have the user, fetch all data that depends on their address
+        const [
+          pending, 
+          approved, 
+          rejected, 
+          allDatasets, 
+          userContributions
+        ] = await Promise.all([
+          Web3Service.getPendingProposals(),
+          Web3Service.getApprovedProposals(),
+          Web3Service.getRejectedProposals(),
+          Web3Service.getFavouriteDatasets(),
+          Web3Service.userContributions() // This will now work correctly
+        ]);
 
-      const approvedContributions = await Web3Service.getApprovedProposals();
-      setApprovedProposals(approvedContributions);
-      console.log("pendinggggg", approvedContributions)
-
-
-      const rejectedContributions = await Web3Service.getRejectedProposals();
-      setRejectedProposals(rejectedContributions);
-
-      const [allDatasets, userContributions] = await Promise.all([
-        await Web3Service.getFavouriteDatasets(),
-        await Web3Service.userContributions() // Use the correct function here
-      ]);
-
-      console.log("all datasets", allDatasets)
-      console.log("user contributions", userContributions)
-
-   
-      setContributions(userContributions);
-      setDatasets(allDatasets);
+        setPendingProposals(pending);
+        setApprovedProposals(approved);
+        setRejectedProposals(rejected);
+        setContributions(userContributions);
+        setDatasets(allDatasets);
+        
+        console.log("user contributions on contributions page", userContributions);
+      }
     } catch (error) {
       console.error("Error loading data:", error);
     }
-    setLoading(false);
+    setLoading(false); // Stop loading
   };
 
   const handleResolve = async (proposalId) => {
@@ -159,11 +168,15 @@ export default function Contributions() {
     const pending = contributions.filter(c => c.status === 'pending').length;
     const approved = contributions.filter(c => c.status === 'approved').length;
     const rejected = contributions.filter(c => c.status === 'rejected').length;
-    const totalEarned = contributions
-      .filter(c => c.status === 'approved')
-      .reduce((sum, c) => sum + (c.tokens_earned || 0), 0);
+    let totalEarned;
+    if (!user) {
+      totalEarned = 0;
+    }
+    else {
+      totalEarned = user.total_earned * 1e18 || 0;
+    }
 
-      console.log("contributions", contributions)
+    console.log("contributions", contributions)
 
     return { pending, approved, rejected, totalEarned };
   };

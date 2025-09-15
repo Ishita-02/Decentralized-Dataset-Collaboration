@@ -40,6 +40,9 @@ export default function Verify() {
   const [voteStatuses, setVoteStatuses] = useState({}); 
   const [expiredReviews, setExpiredReviews] = useState([]);// Will store vote status for each proposal, e.g., { 1: true, 2: false }
   const [isLoadingVotes, setIsLoadingVotes] = useState(true);
+  const [user, setUser] = useState(null);
+  
+
   
   // State for UI control
   const [showStakeDialog, setShowStakeDialog] = useState(false);
@@ -59,6 +62,10 @@ export default function Verify() {
       if (isVerifier && account) {
         try {
           console.log("User is verifier, fetching data...");
+
+          const currentUser = await Web3Service.getCurrentUser(); 
+          console.log("current user", currentUser);
+          setUser(currentUser);
           
           // Fetch data relevant only to verifiers
           const pendingReviews = await Web3Service.getPendingReviews();
@@ -83,8 +90,6 @@ export default function Verify() {
 
           setExpiredReviews(expiredFromPending);
           setPendingReviews(activePendingReviews);
-
-          
           
           // Fetch reviewed proposals
           const reviewedProposals = await Web3Service.getReviewedProposals();
@@ -115,9 +120,9 @@ export default function Verify() {
   }, [account, isVerifier, dataLoaded]); 
   
   // ✅ 3. Separate useEffect for vote statuses - FIXED to not run duplicate calls
-  useEffect(() => {
+    useEffect(() => {
     // Don't run if the main list is empty or if we're still loading votes
-    if (myVerifications.length === 0 || isLoadingVotes === false) {
+    if (myVerifications.length === 0 || !account) {
       if (myVerifications.length === 0) {
         setIsLoadingVotes(false);
       }
@@ -125,28 +130,26 @@ export default function Verify() {
     }
 
     const fetchAllVoteStatuses = async () => {
-      console.log("Fetching vote statuses for", myVerifications.length, "verifications");
+      console.log("Fetching specific votes for", myVerifications.length, "verifications");
       setIsLoadingVotes(true);
       
       try {
-        // Create a list of promises, one for each verification
+        // Create a list of promises to get the specific vote for each verification
         const promises = myVerifications.map(verification => {
-          console.log("Fetching vote status for proposal:", verification.proposalId);
-          const myVote = Web3Service.userVoteStatusByProposalId(verification.proposalId);
-          console.log("vote", myVote)
-          return Web3Service.userVoteStatusByProposalId(verification.proposalId);
+          // ?? NEW ADDITION: We now call the new getVerifierVote function
+          // NOTE: This assumes you have added 'getVerifierVote' to your Web3Service
+          return Web3Service.getVerifierVote(verification.proposalId, account); 
         });
         
-        // Wait for all of them to finish
         const results = await Promise.all(promises);
         
-        // Create a new status map object like { proposalId: true, ... }
         const statuses = {};
         myVerifications.forEach((verification, index) => {
+          // results[index] will be true for 'Approve', false for 'Reject'
           statuses[verification.proposalId] = results[index];
         });
         
-        console.log("Vote statuses loaded:", statuses);
+        console.log("Specific vote choices loaded:", statuses);
         setVoteStatuses(statuses);
         
       } catch (error) {
@@ -156,9 +159,8 @@ export default function Verify() {
       setIsLoadingVotes(false);
     };
 
-    // Only fetch if we haven't loaded vote statuses yet
     fetchAllVoteStatuses();
-  }, [myVerifications]); // Removed isLoadingVotes from dependency to prevent loop
+  }, [myVerifications, account]);// Removed isLoadingVotes from dependency to prevent loop
 
   // ✅ 4. FIXED: handleStakeSuccess - reload data after staking
   const handleStakeSuccess = () => {
@@ -191,10 +193,13 @@ export default function Verify() {
   
   const getVerificationStats = () => {
     const completed = myVerifications.filter(v => v.status === 'completed').length;
-    const totalEarned = myVerifications
-        .filter(v => v.status === 'completed')
-        .reduce((sum, v) => sum + (v.tokens_earned || 0), 0);
-
+    let totalEarned;
+    if (!user) {
+      totalEarned = 0;
+    }
+    else {
+      totalEarned = user.total_earned * 1e18 || 0;
+    }
     return { completed, totalEarned };
   };
 
@@ -373,22 +378,15 @@ export default function Verify() {
 
             <TabsContent value="my-verifications" className="space-y-6">
               {myVerifications.length === 0 ? (
-                <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-                  <CardContent className="text-center py-12">
-                    <ShieldCheck className="w-16 h-16 text-white/20 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium text-white mb-2">No Reviews Yet</h3>
-                    <p className="text-white/60">Start reviewing contributions to earn tokens</p>
-                  </CardContent>
-                </Card>
+                <Card className="bg-white/5"><CardContent className="text-center py-12"><ShieldCheck className="w-16 h-16 text-white/20 mx-auto mb-4" /><h3 className="text-xl font-medium text-white mb-2">No Reviews Yet</h3></CardContent></Card>
               ) : (
                 <div className="space-y-4">
                   {myVerifications.map((verification, index) => {
-                    // Look up the vote status for THIS specific verification
-                    const hasVoted = voteStatuses[verification.proposalId];
+                    // ?? NEW ADDITION: 'myVote' now correctly holds true for approve, false for reject
+                    const myVote = voteStatuses[verification.proposalId];
                     
-                    // Define styles and classes based on the lookup result
-                    const baseBadgeClasses = 'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold';
-                    const statusClasses = hasVoted
+                    const baseClasses = 'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold';
+                    const statusClasses = myVote
                       ? 'bg-green-500/10 text-green-400 border-green-500/20'
                       : 'bg-red-500/10 text-red-400 border-red-500/20';
 
@@ -401,10 +399,11 @@ export default function Verify() {
                               <p className="text-white/60 text-sm mb-2">{verification.title}</p>
                               
                               {isLoadingVotes ? (
-                                <div className={`${baseBadgeClasses} animate-pulse bg-white/10`}>Checking vote...</div>
+                                <div className={`${baseClasses} animate-pulse bg-white/10`}>Checking vote...</div>
                               ) : (
-                                <div className={`${baseBadgeClasses} ${statusClasses}`}>
-                                  {hasVoted ? 'Approved' : 'Rejected'}
+                                // ?? NEW ADDITION: The text now accurately reflects your vote
+                                <div className={`${baseClasses} ${statusClasses}`}>
+                                  {myVote ? 'You Approved' : 'You Rejected'}
                                 </div>
                               )}
                             </div>

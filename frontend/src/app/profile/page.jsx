@@ -18,8 +18,14 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import Web3Service from "../components/services/Web3Service";
+import { useWeb3 } from "../context/Web3Provider"; 
+
 
 export default function Profile() {
+
+  const { account } = useWeb3();
+
+
   const [user, setUser] = useState(null);
   const [userDatasets, setUserDatasets] = useState([]);
   const [userContributions, setUserContributions] = useState([]);
@@ -38,10 +44,6 @@ export default function Profile() {
     'bg-green-500/10 text-green-400 border-green-500/20',   // Style for index 1
     'bg-red-500/10 text-red-400 border-red-500/20'       // Style for index 2
   ];
-
-  useEffect(() => {
-    loadProfileData();
-  }, []);
 
    const getCategoryColor = (category) => {
     const colors = {
@@ -64,29 +66,45 @@ export default function Profile() {
     "documentation",
   ];
 
-  const loadProfileData = async () => {
-    try {
-      await Web3Service.init();
-      const currentUser = await Web3Service.getCurrentUser();
-      setUser(currentUser);
+  useEffect(() => {
+    const loadProfileData = async () => {
+      // Don't try to load data if the user is not connected.
+      if (!account) {
+        setLoading(false); // Stop loading if there's no account
+        return;
+      }
 
-      const [datasets, contributions, verifications] = await Promise.all([
-        Web3Service.getAllDatasets(),
-        Web3Service.userContributions(),
-        Web3Service.getReviewedProposals()
-      ]);
+      setLoading(true);
+      try {
+        // We no longer need Web3Service.init() because the provider handles the connection.
+        // We can now be sure that when we call the service, it has the correct account.
+        const [
+          currentUser, 
+          datasets, 
+          contributions, 
+          verifications
+        ] = await Promise.all([
+          Web3Service.getCurrentUser(),
+          Web3Service.getAllDatasets(), // Assuming this doesn't need an account
+          Web3Service.userContributions(), // This will now work correctly
+          Web3Service.getReviewedProposals()
+        ]);
 
+        console.log("Profile page successfully fetched contributions:", contributions);
 
-      console.log("verifications", verifications)
+        setUser(currentUser);
+        setUserDatasets(datasets);
+        setUserContributions(contributions);
+        setUserVerifications(verifications);
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setUserDatasets(datasets);
-      setUserContributions(contributions);
-      setUserVerifications(verifications);
-    } catch (error) {
-      console.error("Error loading profile:", error);
-    }
-    setLoading(false);
-  };
+    loadProfileData();
+  }, [account]); 
 
   if (loading) {
     return (
@@ -147,7 +165,7 @@ export default function Profile() {
         </Card>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="p-6 text-center">
               <Database className="w-8 h-8 text-blue-400 mx-auto mb-3" />

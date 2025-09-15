@@ -401,6 +401,7 @@ class Web3Service {
       await this.init();
     }
     try {
+      console.log("account", this.account)
       const userContributions = await this.contract.methods.userContributions(this.account).call();
       console.log("userContributions", userContributions);
       return userContributions;
