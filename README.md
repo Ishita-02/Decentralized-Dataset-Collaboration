@@ -22,10 +22,15 @@ This page allows users to track the status of their own submissions. Contributor
 
 <img width="1470" height="714" alt="Screenshot 2025-09-15 at 1 09 21 AM" src="https://github.com/user-attachments/assets/f860765c-287d-4807-88fe-5bbcf75c79bc" />
 
+<img width="1468" height="588" alt="Screenshot 2025-09-15 at 1 52 24 AM" src="https://github.com/user-attachments/assets/6d65f42b-42b5-47f7-b004-7b5387171ba0" />
+
+
 ### 5. Dataset Marketplace
 A marketplace where users can browse, purchase, and download high-quality, verified datasets. Each dataset shows key information and its price in DATA tokens.
 
 <img width="1470" height="720" alt="Screenshot 2025-09-15 at 1 45 48 AM" src="https://github.com/user-attachments/assets/dd033000-144b-4f5b-bab6-ea2572545e78" />
+
+<img width="1470" height="793" alt="Screenshot 2025-09-15 at 1 45 32 AM" src="https://github.com/user-attachments/assets/1e80436a-f593-40fa-be75-363c481fa89b" />
 
 
 
