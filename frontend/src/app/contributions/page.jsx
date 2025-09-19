@@ -96,7 +96,8 @@ export default function Contributions() {
   const handleResolve = async (proposalId) => {
     setResolvingId(proposalId); // Set loading state for this specific button
     try {
-      // IMPORTANT: Ensure your Web3Service uses .send() for this transaction, not .call()
+      console.log("proposal id", proposalId)
+
       await Web3Service.resolveContribution(proposalId);
       alert('Contribution resolved successfully! The data will now refresh.');
       await loadData(); // Refresh all data on the page
@@ -173,7 +174,7 @@ export default function Contributions() {
       totalEarned = 0;
     }
     else {
-      totalEarned = user.total_earned * 1e18 || 0;
+      totalEarned = user.total_earned || 0;
     }
 
     console.log("contributions", contributions)

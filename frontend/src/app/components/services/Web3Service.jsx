@@ -518,7 +518,7 @@ class Web3Service {
       await this.init();
     }
     try {
-      const result = await this.contract.methods.resolveContribution(id).call();
+      const result = await this.contract.methods.resolveContribution(id).send({from: this.account});
       return result;
     } catch (e) {
       console.warn('No dataset found or failed to fetch, returning empty list');
