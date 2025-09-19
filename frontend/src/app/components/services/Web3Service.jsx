@@ -15,7 +15,7 @@ class Web3Service {
     this.tokenContractABI = dataTokenABI;
     
     // Replace with your deployed contract address
-    this.contractAddress = "0x66aF4674DA64810A5De733A13597C4778b8cACFe";
+    this.contractAddress = "0x12583d3247F6bF5DF70c82bF728765A336dc1006";
 
   }
 

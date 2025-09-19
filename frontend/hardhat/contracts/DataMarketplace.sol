@@ -724,7 +724,7 @@ contract DataMarketplace {
             ContributionProposal storage p = proposals[i];
             if (block.timestamp >= p.voteDeadline && !p.resolved) {
                 upkeepNeeded = true;
-                performData = abi.encode(i); // Pass the proposalId
+                performData = abi.encode(i); 
                 return (upkeepNeeded, performData);
             }
         }

@@ -115,7 +115,7 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <StatsGrid 
           stats={stats} 
-          userTokens={user?.tokens_balance / 1e18 || 0}
+          userTokens={(user?.tokens_balance / 1e18).toFixed(2) || 0}
           userReputation={user?.reputation_score || 0}
           isLoading={isLoading}
         />

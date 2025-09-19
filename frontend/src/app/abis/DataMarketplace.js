@@ -1,5 +1,12 @@
 const dataMarketplaceABI = [
 	{
+		"inputs": [],
+		"name": "claimRewards",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -148,6 +155,65 @@ const dataMarketplaceABI = [
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "datasetId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "proposedURI",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "title",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "description",
+				"type": "string"
+			},
+			{
+				"internalType": "enum DataMarketplace.ContributionType",
+				"name": "contribType",
+				"type": "uint8"
+			}
+		],
+		"name": "proposeContribution",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "datasetId",
+				"type": "uint256"
+			}
+		],
+		"name": "purchaseDataset",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "proposalId",
+				"type": "uint256"
+			}
+		],
+		"name": "resolveContribution",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -165,6 +231,98 @@ const dataMarketplaceABI = [
 		],
 		"name": "RewardsClaimed",
 		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "stakeToVerify",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "_datasetId",
+				"type": "uint256"
+			}
+		],
+		"name": "toggleFavourite",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "unstake",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "tokenURI",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "title",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "description",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "mimeType",
+						"type": "string"
+					},
+					{
+						"internalType": "uint256",
+						"name": "size",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "contributionReward",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "verificationReward",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "totalRewardPool",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "category",
+						"type": "string"
+					}
+				],
+				"internalType": "struct DataMarketplace.UploadParams",
+				"name": "params",
+				"type": "tuple"
+			}
+		],
+		"name": "uploadDataset",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
 	},
 	{
 		"anonymous": false,
@@ -192,81 +350,21 @@ const dataMarketplaceABI = [
 		"type": "event"
 	},
 	{
-		"inputs": [],
-		"name": "CONTRIBUTOR_REWARD_SHARES",
-		"outputs": [
+		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "",
+				"name": "proposalId",
 				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "CREATOR_INITIAL_SHARES",
-		"outputs": [
+			},
 			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
+				"internalType": "bool",
+				"name": "vote",
+				"type": "bool"
 			}
 		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "MINIMUM_STAKE",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "REWARD_POOL_DISTRIBUTION_PERCENT",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "SLASH_PERCENTAGE",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "VOTE_DURATION",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
+		"name": "voteOnContribution",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -295,33 +393,20 @@ const dataMarketplaceABI = [
 	},
 	{
 		"inputs": [],
-		"name": "claimRewards",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "dataToken",
+		"name": "CONTRIBUTOR_REWARD_SHARES",
 		"outputs": [
 			{
-				"internalType": "contract IERC20",
+				"internalType": "uint256",
 				"name": "",
-				"type": "address"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_user",
-				"type": "address"
-			}
-		],
-		"name": "dataTokenBalance",
+		"inputs": [],
+		"name": "CREATOR_INITIAL_SHARES",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -423,6 +508,38 @@ const dataMarketplaceABI = [
 			{
 				"internalType": "uint256",
 				"name": "downloads",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "dataToken",
+		"outputs": [
+			{
+				"internalType": "contract IERC20",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_user",
+				"type": "address"
+			}
+		],
+		"name": "dataTokenBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
 				"type": "uint256"
 			}
 		],
@@ -1159,6 +1276,43 @@ const dataMarketplaceABI = [
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "proposalId",
+				"type": "uint256"
+			},
+			{
+				"internalType": "address",
+				"name": "verifier",
+				"type": "address"
+			}
+		],
+		"name": "getVerifierVote",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "MINIMUM_STAKE",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "proposalCount",
 		"outputs": [
@@ -1241,82 +1395,29 @@ const dataMarketplaceABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
+		"inputs": [],
+		"name": "REWARD_POOL_DISTRIBUTION_PERCENT",
+		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "datasetId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "proposedURI",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "title",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "description",
-				"type": "string"
-			},
-			{
-				"internalType": "enum DataMarketplace.ContributionType",
-				"name": "contribType",
-				"type": "uint8"
-			}
-		],
-		"name": "proposeContribution",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "datasetId",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "purchaseDataset",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "proposalId",
-				"type": "uint256"
-			}
-		],
-		"name": "resolveContribution",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [],
-		"name": "stakeToVerify",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
+		"name": "SLASH_PERCENTAGE",
+		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "_datasetId",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "toggleFavourite",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -1330,78 +1431,6 @@ const dataMarketplaceABI = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "unstake",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"components": [
-					{
-						"internalType": "uint256",
-						"name": "price",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "tokenURI",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "title",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "description",
-						"type": "string"
-					},
-					{
-						"internalType": "string",
-						"name": "mimeType",
-						"type": "string"
-					},
-					{
-						"internalType": "uint256",
-						"name": "size",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "contributionReward",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "verificationReward",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "totalRewardPool",
-						"type": "uint256"
-					},
-					{
-						"internalType": "string",
-						"name": "category",
-						"type": "string"
-					}
-				],
-				"internalType": "struct DataMarketplace.UploadParams",
-				"name": "params",
-				"type": "tuple"
-			}
-		],
-		"name": "uploadDataset",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -1659,21 +1688,16 @@ const dataMarketplaceABI = [
 		"type": "function"
 	},
 	{
-		"inputs": [
+		"inputs": [],
+		"name": "VOTE_DURATION",
+		"outputs": [
 			{
 				"internalType": "uint256",
-				"name": "proposalId",
+				"name": "",
 				"type": "uint256"
-			},
-			{
-				"internalType": "bool",
-				"name": "vote",
-				"type": "bool"
 			}
 		],
-		"name": "voteOnContribution",
-		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -1696,5 +1720,4 @@ const dataMarketplaceABI = [
 		"type": "function"
 	}
 ]
-
   export default dataMarketplaceABI;
