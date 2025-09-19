@@ -10,12 +10,12 @@ class Web3Service {
     this.tokenContract = null;
     
     this.account = null;
-    this.tokenAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+    this.tokenAddress = "0x8A0560A7EC1F32cD11208462a3321e1EE8B31Ad9"
     this.contractABI = dataMarketplaceABI;
     this.tokenContractABI = dataTokenABI;
     
     // Replace with your deployed contract address
-    this.contractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+    this.contractAddress = "0x66aF4674DA64810A5De733A13597C4778b8cACFe";
 
   }
 
@@ -23,7 +23,7 @@ class Web3Service {
   async init() {
     if (typeof window.ethereum !== 'undefined') {
       // Modern dapp browsers
-      this.web3 = new Web3("http://127.0.0.1:8545"); 
+      this.web3 = new Web3("https://ethereum-sepolia-rpc.publicnode.com"); 
       
       try {
         // Request account access
@@ -277,8 +277,7 @@ class Web3Service {
 
     try {
       const tx = await this.contract.methods.claimRewards().send({
-        from: this.account,
-        gas: 100000
+        from: this.account
       });
       
       return tx.transactionHash;

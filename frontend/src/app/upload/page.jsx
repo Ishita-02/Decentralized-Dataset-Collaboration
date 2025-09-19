@@ -89,7 +89,7 @@ export default function UploadPage() {
       await Web3Service.connectWallet();
       const price = Number(formData.download_price || 0);
 
-        const rewardPoolInWei = Web3.utils.toWei(formData.reward_pool.toString(), 'ether');
+        const rewardPoolInWei = price * 1e18;
         console.log("reward pool wei", rewardPoolInWei);
         console.log(`Approving ${formData.reward_pool} DATA tokens for the reward pool...`);
         await Web3Service.approveTokenSpend(rewardPoolInWei);
@@ -110,7 +110,7 @@ export default function UploadPage() {
         size: file.size,
         contributionReward: Number(formData.contribution_reward || 0),
         verificationReward: Number(formData.verification_reward || 0),
-        totalRewardPool: Number(formData.reward_pool || 0),
+        totalRewardPool: Number(rewardPoolInWei || 0),
         category: formData.category
       };
 
