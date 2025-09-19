@@ -89,7 +89,7 @@ export default function UploadPage() {
       await Web3Service.connectWallet();
       const price = Number(formData.download_price || 0);
 
-        const rewardPoolInWei = price * 1e18;
+        const rewardPoolInWei = Web3.utils.toWei(formData.reward_pool.toString(), 'ether');
         console.log("reward pool wei", rewardPoolInWei);
         console.log(`Approving ${formData.reward_pool} DATA tokens for the reward pool...`);
         await Web3Service.approveTokenSpend(rewardPoolInWei);
