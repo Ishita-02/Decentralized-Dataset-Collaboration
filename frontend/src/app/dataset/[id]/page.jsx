@@ -15,7 +15,6 @@ export default function DatasetDetailPage() {
   const params = useParams();
   const router = useRouter();
   
-  // ✅ FIX 1: Parse the ID correctly to handle URL encoding
   const rawId = params.id;
   console.log("Raw ID from params:", rawId);
   
@@ -44,6 +43,7 @@ export default function DatasetDetailPage() {
   const [previewData, setPreviewData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isPurchasing, setIsPurchasing] = useState(false); 
 
   useEffect(() => {
     if (!id) return;
@@ -54,18 +54,15 @@ export default function DatasetDetailPage() {
       try {
 
         console.log("dataset id", id)
-        // ✅ STEP 1: Fetch contract details and IPFS URL in parallel
         let [details, ipfsUrl] = await Promise.all([
           Web3Service.getDatasetById(id),
           Web3Service.getUserDatasetCurrentId(id)
         ]);
 
-        // ✅ STEP 2: Set the main dataset state
         setDataset(details);
         console.log("Dataset Details:", details);
         console.log("IPFS URL:", ipfsUrl);
 
-        // ✅ STEP 3: If an IPFS URL exists, fetch and parse its content
         if (ipfsUrl) {
           const response = await fetch(ipfsUrl);
           if (!response.ok) {
@@ -99,6 +96,41 @@ export default function DatasetDetailPage() {
     const header = lines.length > 0 ? lines[0].split(',') : [];
     const rows = lines.slice(1).map(line => line.split(','));
     return { header, rows };
+  };
+
+  const handlePurchaseDataset = async () => {
+    if (!account) {
+      alert("Please connect your wallet first");
+      return;
+    }
+
+    if (!dataset || !id) {
+      alert("Dataset information not available");
+      return;
+    }
+
+    setIsPurchasing(true);
+    try {
+      console.log("Purchasing dataset with ID:", dataset);
+      
+      // Call the purchase function from Web3Service
+      await Web3Service.approveTokenSpend(dataset.price )
+      const tx = await Web3Service.purchaseDataset(id);
+      
+      console.log("Purchase transaction:", tx);
+      alert("Dataset purchased successfully! You can now download it.");
+      
+      // Optionally download the file immediately after purchase
+      if (dataset.currentURI) {
+        window.open(dataset.currentURI, '_blank');
+      }
+      
+    } catch (err) {
+      console.error("Purchase failed:", err);
+      alert(`Failed to purchase dataset: ${err.message || 'Unknown error'}`);
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   if (isLoading) return <p className="text-center text-white/70 py-10">Loading dataset from the blockchain...</p>;
@@ -188,9 +220,16 @@ export default function DatasetDetailPage() {
           <Card>
             <CardHeader><CardTitle className="text-white">Actions</CardTitle></CardHeader>
             <CardContent className="space-y-3">
-              <Button disabled={!account} className="w-full bg-gradient-to-r from-green-500 to-emerald-500"><Users className="w-4 h-4 mr-2" /> Propose Contribution</Button>
-              <Button disabled={!account} className="w-full bg-gradient-to-r from-purple-500 to-pink-500"><ShieldCheck className="w-4 h-4 mr-2" /> Vote on Proposal</Button>
-              <Button disabled={!account} className="w-full bg-gradient-to-r from-blue-500 to-cyan-500"><ShoppingCart className="w-4 h-4 mr-2" /> Purchase & Download</Button>
+              {/* <Button disabled={!account} className="w-full bg-gradient-to-r from-green-500 to-emerald-500"><Users className="w-4 h-4 mr-2" /> Propose Contribution</Button>
+              <Button disabled={!account} className="w-full bg-gradient-to-r from-purple-500 to-pink-500"><ShieldCheck className="w-4 h-4 mr-2" /> Vote on Proposal</Button> */}
+              <Button 
+                disabled={!account || isPurchasing} 
+                onClick={handlePurchaseDataset}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" /> 
+                {isPurchasing ? "Processing..." : "Purchase & Download"}
+              </Button>
             </CardContent>
           </Card>
         </div>
