@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState({
     datasets: 0,
+    contributors: 0,
     contributions: 0,
     verifications: 0,
     totalEarned: 0
@@ -70,9 +71,10 @@ export default function Dashboard() {
 
       setStats({
         datasets: datasets.length,
-        contributions: currentUser.contributions_count,
+        contributors: currentUser.contributions_count,
         verifications: currentUser.verifications_count,
-        totalEarned: currentUser.total_earned || 0
+        totalEarned: currentUser.total_earned || 0,
+        contributions: currentUser.user_contributions
       });
 
       // Load recent activity (contributions and verifications)
@@ -147,7 +149,7 @@ export default function Dashboard() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between text-sm">
                     <span className="text-white/70">Contributions</span>
-                    <span className="text-white font-medium">{user.contributions_count}</span>
+                    <span className="text-white font-medium">{user.user_contributions}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-white/70">Verifications</span>

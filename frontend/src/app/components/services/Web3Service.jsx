@@ -133,20 +133,22 @@ class Web3Service {
     }
 
     try {
-      const [earned, balance, varificationsDone, activeContributors] = await Promise.all([
+      const [earned, balance, varificationsDone, activeContributors, userContributions] = await Promise.all([
         this.getWithdrawableBalance().catch(() => 0),
         this.dataTokenBalance().catch(() => 0),
         this.getReviewedProposals().catch(() => []),
         this.contract.methods.getContributorCount().call().catch(() => 0),
+        this.getUserContributions().catch(() => [])
       ]);
 
       return {
         id: this.account,
         full_name: this.account,
         tokens_balance: Number(balance) || 0,
-        contributions_count: activeContributors,
+        contributions_count: Number(activeContributors),
         verifications_count: varificationsDone.length || 0,
         total_earned: Number(earned) || 0,
+        user_contributions: userContributions.length || 0
       };
     } catch (err) {
       console.error("Error in getCurrentUser:", err);
@@ -584,6 +586,23 @@ class Web3Service {
       console.error("Error fetching verifier vote:", error);
       // Return null or a default value if the verifier hasn't voted or if there's an error
       return null; 
+    }
+  }
+
+  async getUserContributions() {
+    if (!this.contract) {
+      console.error("Contract not initialized");
+      return null;
+    }
+    try {
+      // Calls the 'getVerifierVote' view function on your smart contract
+      const userContributions = await this.contract.methods.userContributions( this.account).call();
+      // Returns true for 'Approve', false for 'Reject'
+      return userContributions;
+    } catch (error) {
+      console.error("Error fetching verifier vote:", error);
+      // Return null or a default value if the verifier hasn't voted or if there's an error
+      return []; 
     }
   }
 
