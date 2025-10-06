@@ -86,11 +86,9 @@ const DatasetSchema = new mongoose.Schema({
       ref: 'User'
     }],
     
-    // Metadata and Tags
     tags: [String],
     category: String,
     
-    // Performance and Quality Metrics
     downloadCount: {
       type: Number,
       default: 0

@@ -18,10 +18,8 @@ export default function DatasetDetailPage() {
   const rawId = params.id;
   console.log("Raw ID from params:", rawId);
   
-  // Extract the actual ID from formats like "id=2" or "id%3D2"
   let id;
   if (rawId.includes('=') || rawId.includes('%3D')) {
-    // Handle both "id=2" and "id%3D2" formats
     const decodedId = decodeURIComponent(rawId);
     console.log("Decoded ID:", decodedId);
     
@@ -36,7 +34,6 @@ export default function DatasetDetailPage() {
   
   console.log("Final parsed ID:", id);
 
-  // Global state for wallet connection
   const { account } = useWeb3();
 
   const [dataset, setDataset] = useState(null);
@@ -113,14 +110,12 @@ export default function DatasetDetailPage() {
     try {
       console.log("Purchasing dataset with ID:", dataset);
       
-      // Call the purchase function from Web3Service
       await Web3Service.approveTokenSpend(dataset.price )
       const tx = await Web3Service.purchaseDataset(id);
       
       console.log("Purchase transaction:", tx);
       alert("Dataset purchased successfully! You can now download it.");
       
-      // Optionally download the file immediately after purchase
       if (dataset.currentURI) {
         window.open(dataset.currentURI, '_blank');
       }
@@ -139,7 +134,6 @@ export default function DatasetDetailPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      {/* Header with Back Button and Title */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => router.back()} className="text-white hover:bg-white/10">
           <ArrowLeft className="w-5 h-5" />
@@ -152,7 +146,6 @@ export default function DatasetDetailPage() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {/* Dataset Details Card */}
           <Card>
             <CardHeader><CardTitle className="text-white">Dataset Details</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-2 gap-4 text-sm">

@@ -67,10 +67,6 @@ export default function ContributeForm({ dataset, onSubmit, onCancel }) {
       const ipfsHash = upload.cid;
 
       const tokenURI = `https://${pinataGateway}/ipfs/${ipfsHash}?pinataGatewayToken=UhHUR8T7QBjicM5i3ctXsWy89BJ0LHliIaURM3V7j6dhAospZY3pXepcgALAPk9d`; 
-
-      // Upload file
-      // const { file_url } = await UploadFile({ file });
-
       await onSubmit({
         ...formData,
         tokenURI

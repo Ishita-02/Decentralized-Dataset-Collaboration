@@ -33,16 +33,15 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   const STATUS_TEXT = [
-    "pending",  // Index 0
-    "approved", // Index 1
-    "rejected"  // Index 2
+    "pending",  
+    "approved",
+    "rejected" 
   ];
 
-  // Array for the corresponding Tailwind CSS classes.
   const STATUS_STYLES = [
-    'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', // Style for index 0
-    'bg-green-500/10 text-green-400 border-green-500/20',   // Style for index 1
-    'bg-red-500/10 text-red-400 border-red-500/20'       // Style for index 2
+    'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', 
+    'bg-green-500/10 text-green-400 border-green-500/20',  
+    'bg-red-500/10 text-red-400 border-red-500/20'      
   ];
 
    const getCategoryColor = (category) => {
@@ -68,16 +67,13 @@ export default function Profile() {
 
   useEffect(() => {
     const loadProfileData = async () => {
-      // Don't try to load data if the user is not connected.
       if (!account) {
-        setLoading(false); // Stop loading if there's no account
+        setLoading(false);
         return;
       }
 
       setLoading(true);
       try {
-        // We no longer need Web3Service.init() because the provider handles the connection.
-        // We can now be sure that when we call the service, it has the correct account.
         const [
           currentUser, 
           datasets, 
@@ -85,8 +81,8 @@ export default function Profile() {
           verifications
         ] = await Promise.all([
           Web3Service.getCurrentUser(),
-          Web3Service.getAllDatasets(), // Assuming this doesn't need an account
-          Web3Service.userContributions(), // This will now work correctly
+          Web3Service.getAllDatasets(), 
+          Web3Service.userContributions(), 
           Web3Service.getReviewedProposals()
         ]);
 
@@ -126,7 +122,6 @@ export default function Profile() {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
-        {/* Profile Header */}
         <Card className="bg-white/5 backdrop-blur-xl border-white/10">
           <CardContent className="p-8">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
@@ -138,7 +133,6 @@ export default function Profile() {
                 <h1 className="text-xl font-bold text-white mb-2">
                   {user?.full_name || user?.email.split('@')[0]}
                 </h1>
-                {/* <p className="text-white/60 mb-4">{user?.email}</p> */}
                 
                 <div className="flex flex-wrap gap-3">
                   {/* <Badge className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-300 border-blue-500/20">
@@ -164,7 +158,6 @@ export default function Profile() {
           </CardContent>
         </Card>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="p-6 text-center">

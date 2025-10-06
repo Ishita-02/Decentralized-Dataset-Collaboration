@@ -1,4 +1,3 @@
-// Web3 Service for interacting with the DataMarketplace smart contract
 import Web3 from 'web3';
 import dataMarketplaceABI from '@/app/abis/DataMarketplace';
 import dataTokenABI from '@/app/abis/DataToken';
@@ -14,19 +13,15 @@ class Web3Service {
     this.contractABI = dataMarketplaceABI;
     this.tokenContractABI = dataTokenABI;
     
-    // Replace with your deployed contract address
     this.contractAddress = "0x12583d3247F6bF5DF70c82bF728765A336dc1006";
-
   }
 
   
   async init() {
     if (typeof window.ethereum !== 'undefined') {
-      // Modern dapp browsers
       this.web3 = new Web3("https://ethereum-sepolia-rpc.publicnode.com"); 
       
       try {
-        // Request account access
         await window.ethereum.request({ method: 'eth_requestAccounts' });
         const accounts = await this.web3.eth.getAccounts();
         this.account = accounts[0];
@@ -38,7 +33,6 @@ class Web3Service {
           window.location.reload(); 
         });
         
-        // Initialize contract
         this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
         this.tokenContract = new this.web3.eth.Contract(this.tokenContractABI, this.tokenAddress);
         
@@ -60,15 +54,13 @@ class Web3Service {
     
     this.web3 = new Web3(window.ethereum);
     
-    // This triggers the MetaMask pop-up for the user to select an account
     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
     if (accounts.length === 0) {
       throw new Error("No accounts found. Please connect an account in MetaMask.");
     }
     
-    this.account = accounts[0]; // Set the account to the one the user selected
+    this.account = accounts[0]; 
 
-    // Initialize contracts with the user's provider and account
     this.contract = new this.web3.eth.Contract(this.contractABI, this.contractAddress);
     this.tokenContract = new this.web3.eth.Contract(this.tokenContractABI, this.tokenAddress);
     
@@ -81,7 +73,6 @@ class Web3Service {
       return false;
     }
     this.web3 = new Web3(window.ethereum);
-    // eth_accounts returns an array of accounts if already connected, or empty if not
     const accounts = await this.web3.eth.getAccounts();
     return accounts.length > 0;
   }
@@ -96,9 +87,6 @@ class Web3Service {
     }
   
     try {
-
-      // console.log(this.tokenContract, this.contractAddress)
-      // CORRECT: Get the current allowance using await, .call(), and the correct arguments.
       const currentAllowance = await this.tokenContract.methods
         .allowance(this.account, this.contractAddress)
         .call();
@@ -106,11 +94,9 @@ class Web3Service {
       console.log("Current allowance:", currentAllowance);
       console.log("Amount needed:", amountInWei);
   
-      // CORRECT: Compare the allowance to the required amount.
-      // Use BigInt for safety, as token amounts can be very large.
       if (BigInt(currentAllowance) >= BigInt(amountInWei)) {
         console.log("Sufficient allowance already exists.");
-        return true; // Return a value indicating no transaction was needed.
+        return true; 
       } else {
         console.log("Allowance is insufficient. Sending approve transaction...");
         const tx = await this.tokenContract.methods
@@ -118,7 +104,7 @@ class Web3Service {
           .send({ from: this.account });
           
         console.log("Approve transaction successful:", tx.transactionHash);
-        return tx.transactionHash; // Return the transaction hash.
+        return tx.transactionHash; 
       }
     } catch (error) {
       console.error("Error approving token spend:", error);
@@ -183,16 +169,12 @@ class Web3Service {
     try {
       const amountWei = this.web3.utils.toWei(amount.toString(), 'ether');
       
-      // First approve the contract to spend tokens (if using ERC20)
-      // Note: You'll need the DATA token contract for this
-      // await this.approveTokenSpend(amountWei);
       await this.approveTokenSpend(amountWei);
       
       const tx = await this.contract.methods.stakeToVerify().send({
         from: this.account,
         gas: 200000
       });
-      console.log(tx)
       
       return tx.transactionHash;
     } catch (error) {
@@ -304,9 +286,7 @@ class Web3Service {
     }
   }
 
-  // READ HELPERS (graceful fallbacks if contract lacks these views)
   async getAllDatasets() {
-    // Try to initialize for read if not already
     if (!this.web3 && typeof window !== 'undefined' && window.ethereum) {
       await this.init();
     }
@@ -334,7 +314,6 @@ class Web3Service {
     } catch (e) {
       console.warn('getAllDatasets view failed, returning empty list');
     }
-    // Fallback: return empty list so UI still renders
     return [];
   }
 
@@ -578,13 +557,10 @@ class Web3Service {
       return null;
     }
     try {
-      // Calls the 'getVerifierVote' view function on your smart contract
       const voteChoice = await this.contract.methods.getVerifierVote(proposalId, this.account).call();
-      // Returns true for 'Approve', false for 'Reject'
       return voteChoice;
     } catch (error) {
       console.error("Error fetching verifier vote:", error);
-      // Return null or a default value if the verifier hasn't voted or if there's an error
       return null; 
     }
   }
@@ -595,13 +571,10 @@ class Web3Service {
       return null;
     }
     try {
-      // Calls the 'getVerifierVote' view function on your smart contract
       const userContributions = await this.contract.methods.userContributions( this.account).call();
-      // Returns true for 'Approve', false for 'Reject'
       return userContributions;
     } catch (error) {
       console.error("Error fetching verifier vote:", error);
-      // Return null or a default value if the verifier hasn't voted or if there's an error
       return []; 
     }
   }

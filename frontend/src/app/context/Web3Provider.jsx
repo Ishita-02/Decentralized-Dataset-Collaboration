@@ -17,13 +17,11 @@ export function Web3Provider({ children }) {
     setIsVerifier(false);
     setStakedAmount(0);
     setError(null);
-    // ✅ 1. Set the flag in localStorage when user disconnects
     localStorage.setItem('wallet_disconnected', 'true');
     console.log("Wallet disconnected.");
   }, []);
 
   const connectWallet = useCallback(async () => {
-    // ✅ 2. Remove the flag when the user intentionally connects
     localStorage.removeItem('wallet_disconnected');
     setIsLoading(true);
     setError(null);
@@ -63,7 +61,6 @@ export function Web3Provider({ children }) {
       window.ethereum.on('accountsChanged', handleAccountsChanged);
       window.ethereum.on('chainChanged', handleChainChanged);
 
-      // ✅ 3. Check for the flag before trying to auto-reconnect
       const checkExistingConnection = async () => {
         const isDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
         if (isDisconnected) {

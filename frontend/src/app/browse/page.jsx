@@ -18,7 +18,6 @@ export default function BrowsePage() {
   const [filteredDatasets, setFilteredDatasets] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   
-  // NEW: State to store the IDs of favorited datasets
   const [favoriteStatus, setFavoriteStatus] = useState(new Map());
   const [isFetching, setIsFetching] = useState(true);
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(new Set());
@@ -44,7 +43,6 @@ export default function BrowsePage() {
     console.log("Loading favorite status for all datasets...");
     const statusMap = new Map();
 
-    // Check favorite status for each dataset
     const favoritePromises = datasetList.map(async (dataset) => {
       const isFavorited = await checkIfFavorited(dataset.id);
       statusMap.set(dataset.id, isFavorited);
@@ -64,29 +62,24 @@ export default function BrowsePage() {
   const handleToggleFavorite = async (datasetId) => {
     console.log(`Toggling favorite for dataset ID: ${datasetId}`);
     
-    // Prevent multiple simultaneous toggles for the same dataset
     if (isTogglingFavorite.has(datasetId)) {
       console.log("Already toggling favorite for this dataset, ignoring...");
       return;
     }
 
-    // Add to toggling set
     setIsTogglingFavorite(prev => new Set([...prev, datasetId]));
 
     try {
-      // Call the contract method
       const result = await Web3Service.toggleFavourite(datasetId);
       console.log("Toggle result from contract:", result);
 
-      // Check if we got a valid result (true/false)
       if (typeof result === 'boolean') {
         console.log(`Successfully ${result ? 'added to' : 'removed from'} favorites!`);
         
-        // Add a small delay to ensure transaction is processed, then refresh
         setTimeout(() => {
           console.log("Refreshing page to reflect changes...");
           window.location.reload();
-        }, 1000); // 1 second delay
+        }, 1000); 
         
       } else {
         console.error("Unexpected result from contract:", result);
@@ -96,18 +89,14 @@ export default function BrowsePage() {
     } catch (error) {
       console.error("Error toggling favorite status:", error);
       
-      // Remove from toggling set on error
       setIsTogglingFavorite(prev => {
         const newSet = new Set(prev);
         newSet.delete(datasetId);
         return newSet;
       });
 
-      // Show error to user
       alert(`Failed to update favorite status: ${error.message || 'Unknown error'}`);
-    }
-    
-    // Note: We don't remove from toggling set on success because page will refresh
+    }    
   };
 
   const loadData = useCallback(async () => {
@@ -117,14 +106,12 @@ export default function BrowsePage() {
     try {
       console.log("Loading datasets for account:", account);
       
-      // Fetch datasets
       const contractDatasets = await Web3Service.getAllDatasets();
       console.log("Contract datasets fetched:", contractDatasets);
       
       setDatasets(contractDatasets);
       setFilteredDatasets(contractDatasets);
 
-      // Load favorite status for all datasets
       await loadFavoriteStatus(contractDatasets);
 
     } catch (error) {
@@ -183,7 +170,6 @@ export default function BrowsePage() {
           <ArrowLeft className="w-5 h-5" />
         </Button>
       </div>
-      {/* Header */}
       <div className="text-center space-y-4">
         <h1 className="text-3xl md:text-5xl font-bold text-white">
           Discover
@@ -196,7 +182,6 @@ export default function BrowsePage() {
         </p>
       </div>
 
-      {/* Search and Filters */}
       <Card className="bg-white/5 backdrop-blur-xl border-white/10">
         <CardContent className="p-6">
             <div className="flex-1 relative">
@@ -230,7 +215,7 @@ export default function BrowsePage() {
                 dataset={dataset}
                 onToggleFavorite={handleToggleFavorite}
                 isFavorite={isFavorited}
-                isToggling={isToggling} // Pass loading state
+                isToggling={isToggling} 
               />
             );
           })

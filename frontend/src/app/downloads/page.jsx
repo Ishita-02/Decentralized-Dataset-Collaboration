@@ -73,18 +73,16 @@ export default function Downloads() {
     
     try {
       if (dataset.download_price === 0) {
-        // Free download - just record the download
         window.open(dataset.file_url, '_blank');
       } else {
        
         await Web3Service.approveTokenSpend(dataset.download_price * 1e18 *1e18)
         console.log("dataset", dataset)
         await Web3Service.purchaseDataset(dataset.id);
-        // After successful purchase, open download
         window.open(dataset.file_url, '_blank');
       }
       
-      loadData(); // Refresh data
+      loadData();
     } catch (error) {
       console.error("Error purchasing dataset:", error);
       alert("Failed to purchase dataset. Please try again.");
@@ -96,7 +94,6 @@ export default function Downloads() {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button
             variant="ghost"

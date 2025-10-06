@@ -52,19 +52,14 @@ export default function Contributions() {
   const loadData = async () => {
     setLoading(true); // Start loading
     try {
-      // First, initialize the service and get a confirmed connection
       await Web3Service.init();
       const connected = await Web3Service.isConnected();
       setWeb3Connected(connected);
 
-      // ?? NEW ADDITION: Only proceed if the user is connected
       if (connected) {
-        // Get the current user's account first to ensure it's available
         const currentUser = await Web3Service.getCurrentUser();
-        console.log("current user on contributions page", currentUser);
         setUser(currentUser);
 
-        // Now that we have the user, fetch all data that depends on their address
         const [
           pending, 
           approved, 

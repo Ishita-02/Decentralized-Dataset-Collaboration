@@ -1,20 +1,18 @@
-// Verify.jsx - FIXED VERSION
 "use client"
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useWeb3 } from '../context/Web3Provider'; // Make sure the path is correct
-import Web3Service from '../../app/components/services/Web3Service'; // We still need this for now
-import { format } from "date-fns"; // ?? NEW ADDITION
+import { useWeb3 } from '../context/Web3Provider'; 
+import Web3Service from '../../app/components/services/Web3Service'; 
+import { format } from "date-fns"; 
 
-// Import your UI components
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Coins, ShieldCheck, Clock, CheckCircle, Award, FileText, XCircle, User } from 'lucide-react';
-import StakeDialog from '../components/verify/StakeDialog'; // Assuming you have this
-import VerificationCard from '../components/verify/VerificationCard'; // Assuming you have this
+import StakeDialog from '../components/verify/StakeDialog'; 
+import VerificationCard from '../components/verify/VerificationCard'; 
 
 const ContributionTypeText = [
   "data_cleaning",
@@ -25,73 +23,54 @@ const ContributionTypeText = [
 ];
 
 export default function Verify() {
-  // ✅ 1. Get ALL web3 state and functions from the hook
   const { account, isVerifier, stakedAmount, connectWallet, web3 } = useWeb3();
   
   const router = useRouter();
 
-  // State for data fetched from the contract
   const [pendingContributions, setPendingContributions] = useState([]);
   const [pendingReviews, setPendingReviews] = useState([]);
-  const [myVerifications, setMyVerifications] = useState([]); // You'll need a way to fetch this
+  const [myVerifications, setMyVerifications] = useState([]); 
   const [reviewCompleted, setReviewCompleted] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [voted, setVoted] = useState(false);
   const [voteStatuses, setVoteStatuses] = useState({}); 
-  const [expiredReviews, setExpiredReviews] = useState([]);// Will store vote status for each proposal, e.g., { 1: true, 2: false }
+  const [expiredReviews, setExpiredReviews] = useState([]);
   const [isLoadingVotes, setIsLoadingVotes] = useState(true);
   const [user, setUser] = useState(null);
   
-
   
-  // State for UI control
   const [showStakeDialog, setShowStakeDialog] = useState(false);
   
-  // Track if data has been loaded to prevent duplicate calls
   const [dataLoaded, setDataLoaded] = useState(false);
 
-  // ✅ 2. A single, clean useEffect to load data - ONLY runs after user becomes verifier
   useEffect(() => {
     const loadPageData = async () => {
-      // Prevent duplicate calls
       if (dataLoaded) return;
       
       setLoading(true);
-      console.log("Loading page data - isVerifier:", isVerifier, "account:", account);
       
       if (isVerifier && account) {
         try {
-          console.log("User is verifier, fetching data...");
-
           const currentUser = await Web3Service.getCurrentUser(); 
-          console.log("current user", currentUser);
           setUser(currentUser);
           
-          // Fetch data relevant only to verifiers
           const pendingReviews = await Web3Service.getPendingReviews();
-          console.log("proposal verify page", pendingReviews);
 
           const nowInSeconds = Date.now() / 1000;
           const activePendingReviews = [];
           const expiredFromPending = [];
           
           for (const review of pendingReviews) {
-            // If deadline has passed, move it to the expired list
             if (Number(review.voteDeadline) < nowInSeconds) {
               expiredFromPending.push(review);
             } else {
-              // Otherwise, it's an active pending review
               activePendingReviews.push(review);
             }
           }
-          
-          console.log("Active pending reviews:", activePendingReviews);
-          console.log("Expired reviews:", expiredFromPending);
 
           setExpiredReviews(expiredFromPending);
           setPendingReviews(activePendingReviews);
           
-          // Fetch reviewed proposals
           const reviewedProposals = await Web3Service.getReviewedProposals();
           console.log("reviewed proposal", reviewedProposals);          
 
@@ -99,8 +78,7 @@ export default function Verify() {
           setReviewCompleted(reviewedProposals);
 
           
-          setDataLoaded(true); // Mark data as loaded
-          console.log("Data loading completed");
+          setDataLoaded(true); 
           
         } catch (error) {
           console.error("Error loading verifier data:", error);
@@ -113,15 +91,12 @@ export default function Verify() {
     if (isVerifier && account && !dataLoaded) {
       loadPageData();
     } else if (!account || !isVerifier) {
-      // If no account or not verifier, stop loading
       setLoading(false);
-      setDataLoaded(false); // Reset so data can be loaded when they become verifier
+      setDataLoaded(false); 
     }
   }, [account, isVerifier, dataLoaded]); 
   
-  // ✅ 3. Separate useEffect for vote statuses - FIXED to not run duplicate calls
     useEffect(() => {
-    // Don't run if the main list is empty or if we're still loading votes
     if (myVerifications.length === 0 || !account) {
       if (myVerifications.length === 0) {
         setIsLoadingVotes(false);
@@ -134,10 +109,7 @@ export default function Verify() {
       setIsLoadingVotes(true);
       
       try {
-        // Create a list of promises to get the specific vote for each verification
         const promises = myVerifications.map(verification => {
-          // ?? NEW ADDITION: We now call the new getVerifierVote function
-          // NOTE: This assumes you have added 'getVerifierVote' to your Web3Service
           return Web3Service.getVerifierVote(verification.proposalId, account); 
         });
         
@@ -145,7 +117,6 @@ export default function Verify() {
         
         const statuses = {};
         myVerifications.forEach((verification, index) => {
-          // results[index] will be true for 'Approve', false for 'Reject'
           statuses[verification.proposalId] = results[index];
         });
         
@@ -160,31 +131,22 @@ export default function Verify() {
     };
 
     fetchAllVoteStatuses();
-  }, [myVerifications, account]);// Removed isLoadingVotes from dependency to prevent loop
+  }, [myVerifications, account]);
 
-  // ✅ 4. FIXED: handleStakeSuccess - reload data after staking
   const handleStakeSuccess = () => {
     console.log("Stake successful! User should now be verifier.");
     setShowStakeDialog(false);
     
-    // Reset data loading state so useEffect will run again
     setDataLoaded(false);
     
-    // The useWeb3 hook should automatically update isVerifier.
-    // The useEffect will automatically re-fetch data because `isVerifier` will change.
-    // Force a small delay to ensure blockchain state is updated
     setTimeout(() => {
       console.log("Checking verifier status after stake...");
-      // The useEffect should trigger automatically when isVerifier updates
     }, 2000);
   };
 
   const handleVote = async (contributionId, proposalId, vote) => {
-    try {
-      console.log("Voting on proposal:", proposalId, "vote:", vote);
-      
-      // Refresh data after voting
-      setDataLoaded(false); // new additions
+    try {      
+      setDataLoaded(false); 
 
     } catch (error) {
       console.error("Error submitting vote:", error);
@@ -205,9 +167,6 @@ export default function Verify() {
 
   const stats = getVerificationStats();
 
-  // ✅ 5. Debug logging
-  console.log("Verify page render - account:", account, "isVerifier:", isVerifier, "loading:", loading, "dataLoaded:", dataLoaded);
-
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -227,7 +186,6 @@ export default function Verify() {
           </div>
         </div>
 
-        {/* Web3 Connection & Verifier Status */}
         {!account ? (
           <Card className="bg-yellow-500/10 border-yellow-500/20">
             <CardContent className="p-4">
@@ -287,7 +245,6 @@ export default function Verify() {
           </Card>
         )}
 
-        {/* Stats Grid - Only show when user is verifier and data is loaded */}
         {isVerifier && !loading && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="bg-white/5 backdrop-blur-xl border-white/10">
@@ -324,7 +281,6 @@ export default function Verify() {
           </div>
         )}
 
-        {/* Main Content - Only show when user is verifier */}
         {isVerifier && (
           <Tabs defaultValue="pending-reviews">
             <TabsList className="bg-white/10">
@@ -382,7 +338,6 @@ export default function Verify() {
               ) : (
                 <div className="space-y-4">
                   {myVerifications.map((verification, index) => {
-                    // ?? NEW ADDITION: 'myVote' now correctly holds true for approve, false for reject
                     const myVote = voteStatuses[verification.proposalId];
                     
                     const baseClasses = 'inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold';
@@ -401,7 +356,6 @@ export default function Verify() {
                               {isLoadingVotes ? (
                                 <div className={`${baseClasses} animate-pulse bg-white/10`}>Checking vote...</div>
                               ) : (
-                                // ?? NEW ADDITION: The text now accurately reflects your vote
                                 <div className={`${baseClasses} ${statusClasses}`}>
                                   {myVote ? 'You Approved' : 'You Rejected'}
                                 </div>
@@ -479,7 +433,6 @@ export default function Verify() {
           </Tabs>
         )}
 
-        {/* Stake Dialog */}
         {showStakeDialog && (
           <StakeDialog
             onSuccess={handleStakeSuccess}

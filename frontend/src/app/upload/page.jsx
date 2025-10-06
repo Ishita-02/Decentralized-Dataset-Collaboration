@@ -74,9 +74,7 @@ export default function UploadPage() {
     setError(null);
 
     try {
-      // Step 1: Upload the file to IPFS via our secure API route
       console.log(file)
-    //   const form = new File(file, file.name);
       const upload = await pinata.upload.public.file(file);
       
       
@@ -114,11 +112,9 @@ export default function UploadPage() {
         category: formData.category
       };
 
-      // Step 4: Call the updated Web3Service function with the params object
       await Web3Service.uploadDataset(params);
       setSuccess(true);
       
-      // Step 3: Navigate to the browse page after success
       setTimeout(() => {
         router.push("/browse"); 
       }, 2000);
@@ -140,7 +136,7 @@ export default function UploadPage() {
               Your dataset is now on-chain and ready for contributions.
             </p>
             <Button 
-              onClick={() => router.push("/browse")} // CORRECTED: Use router.push
+              onClick={() => router.push("/browse")}
               className="bg-gradient-to-r from-blue-500 to-purple-500"
             >
               View All Datasets
@@ -158,7 +154,7 @@ export default function UploadPage() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => router.push("/")} // CORRECTED: Use router.push
+          onClick={() => router.push("/")} 
           className="text-white hover:bg-white/10"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -177,7 +173,6 @@ export default function UploadPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* ... The rest of your form JSX is correct ... */}
          <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2">
@@ -255,7 +250,7 @@ export default function UploadPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.push("/")} // CORRECTED
+              onClick={() => router.push("/")} 
               className="border-white/20 text-white hover:bg-white/10"
             >
               Cancel
