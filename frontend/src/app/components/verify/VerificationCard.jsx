@@ -32,7 +32,6 @@ export default function VerificationCard({  contribution, onVote }) {
     try {
       console.log("contribution vote", contribution.proposalId, approve)
       await Web3Service.voteOnContribution(Number(contribution.proposalId), approve);
-      // await onVote(contribution.id, contribution.proposal_id, approve);
     } catch (error) {
       console.error("Error voting:", error);
     }
@@ -90,7 +89,6 @@ export default function VerificationCard({  contribution, onVote }) {
           </div>
         </div>
 
-        {/* Feedback Input */}
         <div className="space-y-2">
           <label className="text-white text-sm font-medium">Review Feedback (Optional)</label>
           <Textarea
@@ -101,7 +99,6 @@ export default function VerificationCard({  contribution, onVote }) {
           />
         </div>
 
-        {/* Voting Buttons */}
         <div className="flex gap-3">
           <Button
             onClick={() => handleVote(false)}

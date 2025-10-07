@@ -58,7 +58,6 @@ export default function Downloads() {
       console.log("current user from downloads", currentUser)
       setUser(currentUser);
 
-      // Load verified and published datasets available for download
       const data = await Web3Service.getAllDatasets();
       console.log("data from getAllDatasets", data)
       setDatasets(data);
@@ -109,7 +108,6 @@ export default function Downloads() {
           </div>
         </div>
 
-        {/* Search Bar */}
         <Card className="bg-white/5 backdrop-blur-xl border-white/10">
           <CardContent className="p-6">
             <div className="relative">
@@ -133,7 +131,6 @@ export default function Downloads() {
           </CardContent>
         </Card>
 
-        {/* Datasets Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             Array(6).fill(0).map((_, i) => (
@@ -195,7 +192,6 @@ export default function Downloads() {
                     </div>
                   )}
 
-                  {/* Stats */}
                   <div className="grid grid-cols-3 gap-3 text-xs">
                     <div className="flex items-center gap-1 text-white/60">
                       <Users className="w-3 h-3" />
@@ -211,7 +207,6 @@ export default function Downloads() {
                     </div>
                   </div>
 
-                  {/* Price & Download */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg">
                       <div className="flex items-center gap-2">
@@ -255,7 +250,6 @@ export default function Downloads() {
                     </Button>
                   </div>
 
-                  {/* Metadata */}
                   <div className="flex items-center justify-between text-xs text-white/40 pt-2 border-t border-white/10">
                     <span>By {dataset.owner?.split('@')[0]}</span>
                     <span>{format(new Date(dataset.created_date), 'MMM d, yyyy')}</span>

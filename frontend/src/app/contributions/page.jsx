@@ -23,7 +23,7 @@ import { format } from "date-fns";
 import ContributeForm from "../components/contributions/ContributeForm";
 import ContributionCard from "../components/contributions/ContributionCard";
 
-import Web3Service from "../components/services/Web3Service"; // Updated import path
+import Web3Service from "../components/services/Web3Service"; 
 
 export default function Contributions() {
   const [contributions, setContributions] = useState([]);
@@ -50,7 +50,7 @@ export default function Contributions() {
 
 
   const loadData = async () => {
-    setLoading(true); // Start loading
+    setLoading(true); 
     try {
       await Web3Service.init();
       const connected = await Web3Service.isConnected();
@@ -71,7 +71,7 @@ export default function Contributions() {
           Web3Service.getApprovedProposals(),
           Web3Service.getRejectedProposals(),
           Web3Service.getFavouriteDatasets(),
-          Web3Service.userContributions() // This will now work correctly
+          Web3Service.userContributions() 
         ]);
 
         setPendingProposals(pending);
@@ -85,23 +85,23 @@ export default function Contributions() {
     } catch (error) {
       console.error("Error loading data:", error);
     }
-    setLoading(false); // Stop loading
+    setLoading(false); 
   };
 
   const handleResolve = async (proposalId) => {
-    setResolvingId(proposalId); // Set loading state for this specific button
+    setResolvingId(proposalId); 
     try {
       console.log("proposal id", proposalId)
 
       await Web3Service.resolveContribution(proposalId);
       alert('Contribution resolved successfully! The data will now refresh.');
-      await loadData(); // Refresh all data on the page
+      await loadData(); 
     } catch (error) {
       console.error("Failed to resolve contribution:", error);
       const reason = error.reason || "The transaction was rejected or failed.";
       alert(`Failed to resolve contribution: ${reason}`);
     } finally {
-      setResolvingId(null); // Clear loading state
+      setResolvingId(null); 
     }
   };
 
@@ -141,8 +141,6 @@ export default function Contributions() {
 
       console.log("contribution data", contributionData);
       const contributionTypeNumber = ContributionType[contributionData.contribution_type];
-
-      // Submit to blockchain first
       
       const txHash = await Web3Service.proposeContribution(
         selectedDataset.id,
@@ -182,7 +180,6 @@ export default function Contributions() {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Button
             variant="ghost"
@@ -198,7 +195,6 @@ export default function Contributions() {
           </div>
         </div>
 
-        {/* Web3 Connection Status */}
         {!web3Connected && (
           <Card className="bg-yellow-500/10 border-yellow-500/20">
             <CardContent className="p-4">
@@ -218,7 +214,6 @@ export default function Contributions() {
           </Card>
         )}
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="bg-white/5 backdrop-blur-xl border-white/10">
             <CardContent className="p-6 text-center">
@@ -253,7 +248,6 @@ export default function Contributions() {
           </Card>
         </div>
 
-        {/* Main Content */}
         <Tabs defaultValue="my-contributions">
           <TabsList className="bg-white/10">
             <TabsTrigger value="my-contributions" className="data-[state=active]:bg-white/20">
@@ -323,7 +317,6 @@ export default function Contributions() {
                             {statusElement}
                           </div>
                           <div className="text-right">
-                            {/* ?? NEW ADDITION: Conditional "Resolve" button */}
                             {!contribution.resolved && isDeadlinePassed && (
                               <Button
                                 size="sm"
@@ -388,7 +381,6 @@ export default function Contributions() {
           </TabsContent>
         </Tabs>
 
-        {/* Contribution Form Modal */}
         {showForm && selectedDataset && (
           <ContributeForm
             dataset={selectedDataset}

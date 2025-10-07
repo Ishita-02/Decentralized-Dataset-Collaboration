@@ -9,14 +9,13 @@ import {
   FileText,
   Eye,
   Plus,
-  Star, // Make sure Star is imported,
+  Star, 
   Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation"; 
 import { createPageUrl } from "@/components/ui/utils";
 
-// UPDATED: The component now accepts the onToggleFavorite and isFavorite props
 export default function DatasetCard({ dataset, onToggleFavorite, isFavorite, isToggling  }) {
 
   console.log("DatasetCard props:", { 
@@ -45,17 +44,14 @@ export default function DatasetCard({ dataset, onToggleFavorite, isFavorite, isT
     console.log("Current isFavorite:", isFavorite);
     console.log("Is toggling:", isToggling);
     
-    // Prevent the click from bubbling up and triggering navigation
     e.stopPropagation(); 
     e.preventDefault();
     
-    // Don't allow clicking if already toggling
     if (isToggling) {
       console.log("Already toggling, ignoring click");
       return;
     }
     
-    // Call the function passed down from the parent page
     if (typeof onToggleFavorite === 'function') {
       console.log("Calling onToggleFavorite...");
       onToggleFavorite(dataset.id);

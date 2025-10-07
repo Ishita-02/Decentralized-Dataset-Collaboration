@@ -12,7 +12,7 @@ import {
   AlertCircle,
   Info
 } from "lucide-react";
-import Web3Service from "../services/Web3Service"; // Adjusted import path as per outline
+import Web3Service from "../services/Web3Service"; 
 
 export default function StakeDialog({ onSuccess, onCancel }) {
   const [stakeAmount, setStakeAmount] = useState("1000");
@@ -66,7 +66,6 @@ export default function StakeDialog({ onSuccess, onCancel }) {
             </Alert>
           )}
 
-          {/* Info Box */}
           <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-blue-400 mt-0.5" />
@@ -82,7 +81,6 @@ export default function StakeDialog({ onSuccess, onCancel }) {
             </div>
           </div>
 
-          {/* Stake Amount */}
           <div className="space-y-2">
             <Label className="text-white">Stake Amount (DATA)</Label>
             <div className="relative">
@@ -100,7 +98,6 @@ export default function StakeDialog({ onSuccess, onCancel }) {
             <p className="text-white/60 text-xs">Minimum: 1000 DATA tokens</p>
           </div>
 
-          {/* Warning */}
           <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
             <div className="flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5" />
@@ -114,7 +111,6 @@ export default function StakeDialog({ onSuccess, onCancel }) {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3">
             <Button
               variant="outline"

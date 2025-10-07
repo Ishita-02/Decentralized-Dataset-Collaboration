@@ -14,7 +14,6 @@ import {
 import { format } from "date-fns";
 
 
-// This array maps numbers back to string names for displaying data FROM the contract
 const ContributionTypeText = [
   "data_cleaning",
   "data_addition",

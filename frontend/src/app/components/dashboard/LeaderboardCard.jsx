@@ -18,17 +18,15 @@ export default function LeaderboardCard({ isLoading }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Only load the leaderboard if the wallet is connected
     if (account) {
       loadLeaderboard();
     } else {
-        setLoading(false); // If no wallet, stop loading
+        setLoading(false); 
     }
   }, [account]);
 
   const loadLeaderboard = async () => {
     try {
-      // With no DB, synthesize a minimal list from available wallet only
       const me = await Web3Service.getCurrentUser();
       console.log("leaderboard", me)
       setTopUsers([me]);

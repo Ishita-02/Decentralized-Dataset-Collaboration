@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-// import { Link } from "react-router-dom";
 import { useRouter } from "next/navigation"; 
 import { createPageUrl } from "@/components/ui/utils";
 import { 
@@ -42,17 +41,11 @@ export default function Dashboard() {
 
   const router = useRouter();
 
-
-  // useEffect(() => {
-  //   loadDashboardData();
-  // }, []);
-
   useEffect(() => {
-    // Only load the leaderboard if the wallet is connected
     if (account) {
       loadDashboardData();
     } else {
-        setIsLoading(false); // If no wallet, stop loading
+        setIsLoading(false); 
     }
   }, [account]);
 
@@ -62,10 +55,7 @@ export default function Dashboard() {
       console.log("dashboard", currentUser)
       setUser(currentUser);
 
-      // Load stats
       const datasets = await Web3Service.getAllDatasets();
-      // const activeContributors = await Web3Service.getActiveContributors();
-      // console.log("contributors", activeContributors)
       const contributions = [];
       const verifications = [];
 
@@ -77,16 +67,9 @@ export default function Dashboard() {
         contributions: currentUser.user_contributions
       });
 
-      // Load recent activity (contributions and verifications)
       const userContributions = contributions.slice(0, 3);
       const userVerifications = verifications.slice(0, 3);
 
-      // const activity = [
-      //   ...userContributions.map(c => ({ ...c, type: 'contribution' })),
-      //   ...userVerifications.map(v => ({ ...v, type: 'verification' }))
-      // ].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-
-      // setRecentActivity(activity);
     } catch (error) {
       console.error("Error loading dashboard:", error);
     }
@@ -96,7 +79,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Welcome Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full text-blue-400 text-sm font-medium">
             <Activity className="w-4 h-4" />
@@ -114,7 +96,6 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Stats Grid */}
         <StatsGrid 
           stats={stats} 
           userTokens={(user?.tokens_balance / 1e18).toFixed(2) || 0}
@@ -122,9 +103,7 @@ export default function Dashboard() {
           isLoading={isLoading}
         />
 
-        {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Quick Actions & Activity */}
           <div className="lg:col-span-2 space-y-8">
             <QuickActions />
             {/* <RecentActivity 
@@ -133,11 +112,8 @@ export default function Dashboard() {
             /> */}
           </div>
 
-          {/* Right Column - Leaderboard & Profile */}
           <div className="space-y-8">
-            {/* <LeaderboardCard isLoading={isLoading} /> */}
-            
-            {/* Profile Quick View */}
+           
             {user && (
               <Card className="bg-white/5 backdrop-blur-xl border-white/10">
                 <CardHeader>

@@ -42,10 +42,10 @@ export default function UploadPage() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
 
-  const pinataGateway = "harlequin-characteristic-hummingbird-431.mypinata.cloud";
+  const pinataGateway = process.env.NEXT_PUBLIC_PINATA_GATEWAY;
 
   const pinata = new PinataSDK({
-    pinataJwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI5YzY0ZmQ2My1mN2E1LTQzMTUtOGFlYS1jNmVhZTVjNjI0Y2QiLCJlbWFpbCI6ImlzaGl0YWdyYXdhbDAyMDdAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6ImZiNzY0ZjFhYzg4NjQ4Mjc4M2Y3Iiwic2NvcGVkS2V5U2VjcmV0IjoiZTg1ODNjYmY0MWMzNmUxYTE4ZWZjOTYxZjM4ODQ3NmM4NWVjYWY5ZjEyMzA0YzAwODU1ZjAwY2I1YmVhMTRhZSIsImV4cCI6MTc2NDU5MzgyM30._8OWC_eCp4HhVt49wu_u_AR3lSUN2Se-4CBElFdJD5I",
+    pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT,
     pinataGateway: pinataGateway,
   });
 
@@ -83,7 +83,6 @@ export default function UploadPage() {
       }
       const ipfsHash = upload.cid;
 
-      // Step 2: Call the smart contract with the IPFS hash
       await Web3Service.connectWallet();
       const price = Number(formData.download_price || 0);
 
@@ -193,7 +192,6 @@ export default function UploadPage() {
                 <CardTitle className="text-white">Dataset Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-                {/* Title and Category Fields */}
                 <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                     <Label htmlFor="title" className="text-white">Dataset Title *</Label>
